@@ -483,12 +483,12 @@ export default class UI extends Loggable
 				return new Promise(
 					function(resolve, reject)
 					{
-						stream.onValue(
+						stream.subscribe(
 							(response)=>{
 								resolve(response.datas)
 							}
 						)
-						stream.onError(
+						stream.on_error(
 							(reason)=>{
 								reject(reason)
 							}

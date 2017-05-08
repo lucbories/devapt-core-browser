@@ -1,85 +1,18 @@
 // NPM IMPORTS
 import assert from 'assert'
-// import Bacon from 'baconjs'
 
 // COMMON IMPORTS
 import T             from '../../../node_modules/devapt-core-common/dist/js/utils/types'
 import { transform } from '../../../node_modules/devapt-core-common/dist/js/utils/transform'
 import Stream        from '../../../node_modules/devapt-core-common/dist/js/messaging/stream'
 
+// BROWSER IMPORT
+import ServiceOperation from './service_operation'
+import DEFAULT_OPS      from './service_default_ops'
 
-let context = 'browser/runtime/service'
 
+const context = 'browser/runtime/service'
 
-/**
- * Service operations.
- */
-const DEFAULT_OPS = [
-	{
-		name:'ping',
-		operands:[]
-	},
-	{
-		name:'get',
-		operands:[]
-	},
-	{
-		name:'render',
-		operands:[]
-	},
-	{
-		name:'post',
-		operands:[]
-	},
-	{
-		name:'subscribe',
-		operands:[]
-	},
-	
-	// REMOTE LOGGERS
-	{
-		name:'debug',
-		operands:[]
-	},
-	{
-		name:'info',
-		operands:[]
-	},
-	{
-		name:'warn',
-		operands:[]
-	},
-	{
-		name:'error',
-		operands:[]
-	},
-	
-	// CRUD
-	{
-		name:'read',
-		operands:[]
-	},
-	{
-		name:'update',
-		operands:[]
-	},
-	{
-		name:'delete',
-		operands:[]
-	},
-	{
-		name:'create',
-		operands:[]
-	},
-	{
-		name:'patch',
-		operands:[]
-	},
-	{
-		name:'list',
-		operands:[]
-	}
-]
 
 
 
@@ -102,6 +35,7 @@ export default class Service
 	{
 		this.$name = arg_svc_name
 		this.is_service = true
+		this.execute_on_browser = false
 		
 		// MAP OF POLLING TIMERS: name => timer id
 		this.timers = {}
@@ -119,6 +53,86 @@ export default class Service
 	get_name()
 	{
 		return this.$name
+	}
+	
+	
+	
+	/**
+	 * Load service settings.
+	 * 
+	 * @param {object} arg_settings - runtime settings.
+	 * 
+	 * @returns {nothing}
+	 */
+	load(arg_settings)
+	{
+		const self = this
+		console.log(context + ':load: name=' + this.$name + ' settings=', arg_settings)
+		
+		// SERVICE EXECUTION IS BROWSER OR SERVER (default)
+		if ('execution' in arg_settings)
+		{
+			if (arg_settings.execution == 'browser')
+			{
+				this.execute_on_browser = true
+			}
+		}
+		
+		// GET SERVICES OPERATIONS
+		let ops = DEFAULT_OPS
+		if ('operations' in arg_settings)
+		{
+			ops = arg_settings['operations']
+		}
+		console.log(context + ':load: name=' + this.$name + ' ops=', ops)
+		
+		// GET POLLERS AND TIMELINE SETTINGS
+		const pollers_settings = ('pollers' in arg_settings) ? arg_settings.pollers : undefined
+		const timeline_settings = ('timeline' in arg_settings) ? arg_settings.timeline : undefined
+		// console.log(context + ':load:settings.pollers=', pollers_settings)
+
+		// CONFIGURE OPERATIONS
+		this.$ops = ops
+		const svc_path = '/' + this.$name
+		const svc_socket = window.io(svc_path)
+		self.socket = svc_socket
+		
+		this.$ops.forEach(
+			(operation) => {
+				const op_name = operation
+				console.log(context + ':load:svc=%s:op=%s', this.get_name(), op_name)
+				
+				// OPERATION POLLER: REPEAT EVERY xxx MILLISECONDS FOR GLOBAL SETTINGS
+				if (! this.execute_on_browser && pollers_settings && (op_name in pollers_settings))
+				{
+					const pollers_op_settings = pollers_settings[op_name]
+					// console.log('service has poller for operation:' + op_name, pollers_op_settings)
+
+					this.create_poller(pollers_op_settings, op_name, arg_settings.credentials, svc_socket, [])
+				}
+
+				// OPERATION EXECUTION
+				const svc_operation = new ServiceOperation(op_name)
+				self[op_name] = (arg_operands) => {
+					console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, arg_operands)
+
+					if (this.execute_on_browser)
+					{
+						return svc_operation.execute_on_browser(arg_operands, arg_settings.credentials)
+					}
+
+					return svc_operation.execute_on_server(svc_socket, svc_path, arg_operands, arg_settings.credentials)
+				}
+				self[op_name].operation = svc_operation
+
+				// OPERATION TIMELINE: HAS HISTORY?
+				self[op_name].timelines = {}
+				if (! this.execute_on_browser && timeline_settings && (op_name in timeline_settings))
+				{
+					this.create_timeline(op_name, svc_socket, timeline_settings)
+				}
+			}
+		)
 	}
 
 
@@ -222,177 +236,77 @@ export default class Service
 	{
 		clearInterval(arg_timer_id)
 	}
-	
-	
-	
-	/**
-	 * Load runtime settings.
-	 * 
-	 * @param {object} arg_settings - runtime settings.
-	 * 
-	 * @returns {object} promise
-	 */
-	load(arg_settings)
-	{
-		const self = this
-		
-		// this.separate_level_1()
-		// this.enter_group('load')
-		
-		console.log(context + ':load: name=' + this.$name + ' settings=', arg_settings)
 
-		let ops = DEFAULT_OPS
-		
-		if ('operations' in arg_settings)
+
+	create_timeline(op_name, svc_socket, timeline_settings)
+	{
+		console.log('service has timeline for operation:' + op_name, timeline_settings)
+
+		let timeline_op_settings_array = timeline_settings[op_name]
+		if( T.isObject(timeline_op_settings_array) )
 		{
-			ops = arg_settings['operations']
+			timeline_op_settings_array = [timeline_op_settings_array]
 		}
 		
-		const pollers_settings = ('pollers' in arg_settings) ? arg_settings.pollers : undefined
-		const timeline_settings = ('timeline' in arg_settings) ? arg_settings.timeline : undefined
-		// console.log(context + ':load:settings.pollers=', pollers_settings)
+		let stream = Stream.from_emitter_event(svc_socket, op_name)
 
-		this.$ops = ops
-		const svc_path = '/' + this.$name
-		const svc_socket = window.io(svc_path)
-		self.socket = svc_socket
-		
-		this.$ops.forEach(
-			(operation) => {
-				const op_name = operation.name
-				
-				
-				// REPEAT EVERY xxx MILLISECONDS FOR GLOBAL SETTINGS
-				if (pollers_settings && (op_name in pollers_settings))
+		timeline_op_settings_array.forEach(
+			(timeline_op_settings) => {
+				if ( T.isObject(timeline_op_settings) && timeline_op_settings.transform && T.isNumber(timeline_op_settings.max) && T.isString(timeline_op_settings.name) && T.isNumber(timeline_op_settings.interval_seconds))
 				{
-					const pollers_op_settings = pollers_settings[op_name]
-					// console.log('service has poller for operation:' + op_name, pollers_op_settings)
-
-					this.create_poller(pollers_op_settings, op_name, arg_settings.credentials, svc_socket, [])
-				}
-
-				self[op_name] = (method_cfg) => {
-					// console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, method_cfg)
-
-					// DEFINE REQUEST PAYLOAD
-					const payload = {
-						request: {
-							operation:op_name,
-							operands: [method_cfg]
-						},
-						credentials:arg_settings.credentials
+					self[op_name].timelines[timeline_op_settings.name] = {
+						values:[],
+						previous_ts:undefined,
+						stream:new Stream.Bus()
 					}
-					
-					// REPEAT EVERY xxx MILLISECONDS FOR LOCAL SETTINGS
-					if ( T.isObject(method_cfg) && T.isObject(method_cfg.poller) )
-					{
-						const poller_settings = method_cfg.poller
-						this.create_poller(poller_settings, op_name, arg_settings.credentials, svc_socket, [method_cfg])
-					}
-					
-					let stream = Stream.fromEvent(svc_socket, op_name)
+					stream.subscribe(
+						(value) => {
+							value = value.datas ? value.datas : value
 
-					// DEBOUNCE STREAM
-					if ( T.isObject(method_cfg) && T.isNumber(method_cfg.debounce_milliseconds) )
-					{
-						stream = stream.debounceImmediate(method_cfg.debounce_milliseconds)
-					}
-					// self[op_name].in = stream
-
-					stream.onError(
-						(error) => {
-							console.error(context + 'svc=' + svc_path + ':op_name=' + op_name + ':error=', error)
-						}
-					)
-
-					// SEND REQUEST
-					svc_socket.emit(op_name, payload)
-
-					
-					// RETURN RESPONSE STREAM
-					return stream
-				}
-
-				self[op_name].timelines = {}
-				// self[op_name].in = undefined
-
-
-				// HAS HISTORY
-				if (timeline_settings && (op_name in timeline_settings))
-				{
-					console.log('service has timeline for operation:' + op_name, timeline_settings)
-
-					let timeline_op_settings_array = timeline_settings[op_name]
-					if( T.isObject(timeline_op_settings_array) )
-					{
-						timeline_op_settings_array = [timeline_op_settings_array]
-					}
-					
-					let stream = Stream.fromEvent(svc_socket, op_name)
-
-					timeline_op_settings_array.forEach(
-						(timeline_op_settings) => {
-							if ( T.isObject(timeline_op_settings) && timeline_op_settings.transform && T.isNumber(timeline_op_settings.max) && T.isString(timeline_op_settings.name) && T.isNumber(timeline_op_settings.interval_seconds))
+							if ( T.isString( timeline_op_settings.transform ) || T.isNumber( timeline_op_settings.transform ) )
 							{
-								self[op_name].timelines[timeline_op_settings.name] = {
-									values:[],
-									previous_ts:undefined,
-									stream:new Stream.Bus()
+								const field_name = timeline_op_settings.transform
+								timeline_op_settings.transform = {
+									"result_type":"single",
+									"fields":[
+										{
+											"name":field_name,
+											"path":field_name
+										}
+									]
 								}
-								stream.onValue(
-									(value) => {
-										value = value.datas ? value.datas : value
+							}
 
-										if ( T.isString( timeline_op_settings.transform ) || T.isNumber( timeline_op_settings.transform ) )
-										{
-											const field_name = timeline_op_settings.transform
-											timeline_op_settings.transform = {
-												"result_type":"single",
-												"fields":[
-													{
-														"name":field_name,
-														"path":field_name
-													}
-												]
-											}
-										}
+							const extracted_value = transform(timeline_op_settings.transform)(value)
+							// console.log(context + ':load:timeline extracted_value=', extracted_value)
+							
+							const timeline = self[op_name].timelines[timeline_op_settings.name]
+							const ts = Date.now()
+							const prev_ts = timeline.previous_ts
+							
+							if (!prev_ts)
+							{
+								timeline.previous_ts = ts
+								timeline.values = [{ts:ts, value:extracted_value}]
+								timeline.stream.push(timeline.values)
+							}
+							else if ( (ts - prev_ts) > (timeline_op_settings.interval_seconds * 1000) )
+							{
+								timeline.values.push({ts:ts, value:extracted_value})
+								timeline.previous_ts = ts
+								
+								if (timeline.values.length > timeline_op_settings.max)
+								{
+									const too_many = timeline.values.length - timeline_op_settings.max
+									timeline.values = timeline.values.slice(too_many)
+								}
 
-										const extracted_value = transform(timeline_op_settings.transform)(value)
-										// console.log(context + ':load:timeline extracted_value=', extracted_value)
-										
-										const timeline = self[op_name].timelines[timeline_op_settings.name]
-										const ts = Date.now()
-										const prev_ts = timeline.previous_ts
-										
-										if (!prev_ts)
-										{
-											timeline.previous_ts = ts
-											timeline.values = [{ts:ts, value:extracted_value}]
-											timeline.stream.push(timeline.values)
-										}
-										else if ( (ts - prev_ts) > (timeline_op_settings.interval_seconds * 1000) )
-										{
-											timeline.values.push({ts:ts, value:extracted_value})
-											timeline.previous_ts = ts
-											
-											if (timeline.values.length > timeline_op_settings.max)
-											{
-												const too_many = timeline.values.length - timeline_op_settings.max
-												timeline.values = timeline.values.slice(too_many)
-											}
-
-											timeline.stream.push(timeline.values)
-										}
-									}
-								)
+								timeline.stream.push(timeline.values)
 							}
 						}
 					)
 				}
 			}
 		)
-		
-		// this.leave_group('load')
-		// this.separate_level_1()
 	}
 }

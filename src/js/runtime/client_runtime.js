@@ -9,6 +9,7 @@ import T                      from '../../../node_modules/devapt-core-common/dis
 import Credentials            from '../../../node_modules/devapt-core-common/dist/js/base/credentials'
 import ReduxStore             from '../../../node_modules/devapt-core-common/dist/js/state_store/redux_store'
 import RuntimeBase            from '../../../node_modules/devapt-core-common/dist/js/base/runtime_base'
+import {register_runtime}     from '../../../node_modules/devapt-core-common/dist/js/base/runtime'
 import DefaultRenderingPlugin from '../../../node_modules/devapt-core-common/dist/js/default_plugins/rendering_default_plugin'
 import RenderingPlugin        from '../../../node_modules/devapt-core-common/dist/js/plugins/rendering_plugin'
 
@@ -105,6 +106,8 @@ export default class ClientRuntime extends RuntimeBase
 		// this.enable_trace()
 		this.disable_trace()
 		// this.update_trace_enabled()
+
+		register_runtime(this)
 	}
 
 
@@ -454,8 +457,6 @@ export default class ClientRuntime extends RuntimeBase
 
 		// const app_credentials = this._state_store.get_state().get('credentials')
 		const app_credentials = this.session_credentials.get_credentials()
-		const request_svc_settings = 'request_settings'
-		const reply_svc_settings = 'reply_settings'
 
 		// CHECK SERVICE NAME
 		if ( ! T.isString(arg_svc_name) )
@@ -493,8 +494,6 @@ export default class ClientRuntime extends RuntimeBase
 			
 			// console.log(context + ':register_service_self:credentials', arg_svc_settings.credentials = app_credentials)
 			
-			assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
-			
 			if ( T.isString(arg_svc_settings.credentials ) )
 			{
 				arg_svc_settings.credentials = JSON.parse(arg_svc_settings.credentials)
@@ -513,16 +512,39 @@ export default class ClientRuntime extends RuntimeBase
 
 		// GET SERVICE SETTINGS FROM SERVER SETTINGS: PROCESS RESPONSE
 		
-		const svc_path = '/' + arg_svc_name
+		const svc_path = '/topology'
+		const request_svc_settings = 'devapt-deployed-service-infos'
+		const reply_svc_settings = 'devapt-deployed-service-infos'
 		const svc_socket = window.io(svc_path)
-		const get_settings_stream = Stream.fromEvent(svc_socket, reply_svc_settings)
+		const get_settings_stream = Stream.from_emitter_event(svc_socket, reply_svc_settings)
 		
+		
+		// GET SERVICE SETTINGS FROM SERVER SETTINGS: REQUEST SETTINGS
+		
+		// DEFINE REQUEST PAYLOAD
+		const request = {
+			service:'topology',
+			operation:request_svc_settings,
+			operands: [app_credentials.tenant, arg_svc_name],
+			credentials:app_credentials
+		}
+		this.debug('register_service_self:emit with operation=' + request_svc_settings + ' and operation=', request.operation, request.credentials)
+		svc_socket.emit(request_svc_settings, request)
+
+
 		this.debug('register_service_self:SERVICE FROM SERVER SETTINGS for ' + arg_svc_name)
-		get_settings_stream.onValue(
+		get_settings_stream.subscribe(
 			(response) => {
 				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:response', response)
 				
-				arg_svc_settings = response.settings
+				if (response.has_error)
+				{
+					arg_reject_cb(response.error)
+					self.debug('register_service:svc promise rejected:' + arg_svc_name + ' with error=' + response.error)
+					return
+				}
+
+				arg_svc_settings = response.results
 				assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
 				self.debug('register_service_self:SERVICE FROM SERVER SETTINGS:arg_svc_settings', arg_svc_settings)
 
@@ -545,24 +567,14 @@ export default class ClientRuntime extends RuntimeBase
 			}
 		)
 
-		get_settings_stream.onError(
+		get_settings_stream.on_error(
 			(error) => {
 				self.error('register_service:svc promise rejected:' + arg_svc_name + ' with error:' + error)
 				arg_reject_cb(context + ':register_service:request error for  [' + arg_svc_name + '] error=' + error)
 			}
 		)
 
-		// GET SERVICE SETTINGS FROM SERVER SETTINGS: REQUEST SETTINGS
-		const payload = {
-			request: {
-				operation:request_svc_settings,
-				operands:[]
-			},
-			credentials:app_credentials
-		}
-		this.debug('register_service_self:emit with path=' + request_svc_settings + ' and payload', payload.request.operation, payload.credentials)
-		svc_socket.emit(request_svc_settings, payload)
-
+		
 
 		// this.leave_group('register_service_self')
 	}

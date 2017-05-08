@@ -1,0 +1,66 @@
+export default [
+	{
+		name:'ping',
+		operands:[]
+	},
+	{
+		name:'get',
+		operands:[]
+	},
+	{
+		name:'render',
+		operands:[]
+	},
+	{
+		name:'post',
+		operands:[]
+	},
+	{
+		name:'subscribe',
+		operands:[]
+	},
+
+	// REMOTE LOGGERS
+	{
+		name:'debug',
+		operands:[]
+	},
+	{
+		name:'info',
+		operands:[]
+	},
+	{
+		name:'warn',
+		operands:[]
+	},
+	{
+		name:'error',
+		operands:[]
+	},
+
+	// CRUD
+	{
+		name:'read',
+		operands:[]
+	},
+	{
+		name:'update',
+		operands:[]
+	},
+	{
+		name:'delete',
+		operands:[]
+	},
+	{
+		name:'create',
+		operands:[]
+	},
+	{
+		name:'patch',
+		operands:[]
+	},
+	{
+		name:'list',
+		operands:[]
+	}
+]

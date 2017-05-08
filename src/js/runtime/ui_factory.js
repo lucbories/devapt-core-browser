@@ -497,12 +497,12 @@ export default class UIFactory extends Loggable
 				return new Promise(
 					function(resolve, reject)
 					{
-						stream.onValue(
+						stream.subscribe(
 							(response)=>{
 								resolve(response)
 							}
 						)
-						stream.onError(
+						stream.on_error(
 							(reason)=>{
 								reject(reason)
 							}

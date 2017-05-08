@@ -42,21 +42,19 @@ export default class NameTypeSettingsLoggable extends Loggable
 	 * 
 	 * @returns {nothing}
 	 */
-	constructor(arg_runtime, arg_settings, arg_log_context)
+	constructor(arg_runtime, arg_settings, arg_log_context=context)
 	{
-		// const runtime = window.devapt().runtime()// TODO
+		// CHECK RUNTIME AND SETTINGS
 		arg_settings = arg_settings.toJS ? arg_settings.toJS() : arg_settings
 		assert( T.isObject(arg_runtime) && arg_runtime.is_browser_runtime, context + ':constructor:bad runtime object')
 		assert( T.isObject(arg_settings) && T.isString(arg_settings.type) && T.isString(arg_settings.name), context + ':constructor:bad settings object')
-		const log_context = arg_log_context ? arg_log_context : context
-		super(log_context)
+		
+		super(arg_log_context, arg_runtime.get_logger_manager())
 		
 		this.is_name_type_settings_loggable = true
 		
 		this._runtime = arg_runtime
 		this._ui = arg_runtime.ui()
-		// this._store = arg_runtime.get_state_store()
-		// this._router = arg_runtime.router()
 		this._settings = arg_settings
 	}
 
@@ -117,7 +115,7 @@ export default class NameTypeSettingsLoggable extends Loggable
 	 */
 	get_name()
 	{
-		return this._settings.name
+		return ( T.isObject(this._settings) && T.isString(this._settings.name) ) ? this._settings.name : 'no name'
 	}
 
 
@@ -129,7 +127,7 @@ export default class NameTypeSettingsLoggable extends Loggable
 	 */
 	get_type()
 	{
-		return this._settings.type
+		return ( T.isObject(this._settings) && T.isString(this._settings.type) ) ? this._settings.type : 'no type'
 	}
 
 
