@@ -1,6 +1,6 @@
 // NPM IMPORTS
 import assert from 'assert'
-// import Bacon from 'baconjs'
+import uuid from 'uuid'
 import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
@@ -95,6 +95,9 @@ export default class ClientRuntime extends RuntimeBase
 		this.classes.Component = Component
 		this.classes.RenderingPlugin = RenderingPlugin
 
+		this._session_credentials = undefined
+		this._session_uid = uuid.v1()
+
 		this._services = {}
 		this._services_promises = {}
 		this._ui = undefined
@@ -109,6 +112,31 @@ export default class ClientRuntime extends RuntimeBase
 
 		register_runtime(this)
 	}
+
+
+
+	/**
+	 * Get session id.
+	 * 
+	 * @returns {string} - unique session id.
+	 */
+	get_session_uid()
+	{
+		return this._session_uid
+	}
+
+
+
+	/**
+	 * Get session credentials.
+	 * 
+	 * @returns {Credentials} - session credentials instance.
+	 */
+	get_session_credentials()
+	{
+		return this._session_credentials
+	}
+
 
 
 	/**
@@ -330,7 +358,7 @@ export default class ClientRuntime extends RuntimeBase
 			this._state_store.dispatch( {type:'SET_CREDENTIALS', credentials:arg_credentials_map } )
 		}
 		const credentials_datas = credentials_settings ? credentials_settings.toJS() : Credentials.get_empty_credentials()
-		this.session_credentials = new Credentials(credentials_datas, credentials_update_handler)
+		this._session_credentials = new Credentials(credentials_datas, credentials_update_handler)
 
 		// CREATE UI WRAPPER
 		this._ui = new UI(this, this._state_store)
@@ -456,7 +484,7 @@ export default class ClientRuntime extends RuntimeBase
 		
 
 		// const app_credentials = this._state_store.get_state().get('credentials')
-		const app_credentials = this.session_credentials.get_credentials()
+		const app_credentials = this._session_credentials.get_credentials()
 
 		// CHECK SERVICE NAME
 		if ( ! T.isString(arg_svc_name) )
@@ -491,6 +519,7 @@ export default class ClientRuntime extends RuntimeBase
 			// GET APPLICATION CREDENTIALS
 			// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
 			arg_svc_settings.credentials = app_credentials
+			arg_svc_settings.session_uid = this.get_session_uid()
 			
 			// console.log(context + ':register_service_self:credentials', arg_svc_settings.credentials = app_credentials)
 			
@@ -523,6 +552,7 @@ export default class ClientRuntime extends RuntimeBase
 		
 		// DEFINE REQUEST PAYLOAD
 		const request = {
+			session_uid:this.get_session_uid(),
 			service:'topology',
 			operation:request_svc_settings,
 			operands: [app_credentials.tenant, arg_svc_name],
@@ -551,6 +581,7 @@ export default class ClientRuntime extends RuntimeBase
 				// GET APPLICATION CREDENTIALS
 				// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
 				arg_svc_settings.credentials = app_credentials
+				arg_svc_settings.session_uid = this.get_session_uid()
 				if ( T.isString(arg_svc_settings.credentials ) )
 				{
 					arg_svc_settings.credentials = JSON.parse(arg_svc_settings.credentials)

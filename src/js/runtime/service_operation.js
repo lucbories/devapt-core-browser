@@ -52,7 +52,7 @@ export default class ServiceOperation
 	 * @param {any}    arg_operands    - operation operands.
 	 * @param {object} arg_credentials - session credentials.
 	 * 
-	 * @returns {any}
+	 * @returns {Stream} - service results stream.
 	 */
 	execute_on_browser()
 	{
@@ -67,17 +67,19 @@ export default class ServiceOperation
 	 * @param {string} arg_svc_path    - remote service socket.
 	 * @param {any}    arg_operands    - operation operands.
 	 * @param {object} arg_credentials - session credentials.
+	 * @param {string} arg_session_uid - session unique id.
 	 * 
-	 * @returns {object} - stream.
+	 * @returns {Stream} - service results stream.
 	 */
-	execute_on_server(arg_svc_socket, arg_svc_path, arg_operands, arg_credentials)
+	execute_on_server(arg_svc_socket, arg_svc_path, arg_operands, arg_credentials, arg_session_uid)
 	{
 		const op_name = this.get_name()
-		console.log(context + ':execute_remote:op=%s:path=%s:operands=%o', op_name, arg_svc_path, arg_operands)
+		// console.log(context + ':execute_remote:op=%s:path=%s:operands=%o', op_name, arg_svc_path, arg_operands)
 
 		// DEFINE REQUEST PAYLOAD
 		const request = {
-			service:this.get_name(),
+			session_uid:arg_session_uid,
+			service:this._settings.service.get_name(),
 			operation:op_name,
 			operands: T.isArray(arg_operands) ? arg_operands : [arg_operands],
 			credentials:arg_credentials
@@ -97,7 +99,6 @@ export default class ServiceOperation
 		{
 			stream = stream.debounce_immediate(arg_operands.debounce_milliseconds)
 		}
-		// self[op_name].in = stream
 
 		stream.on_error(
 			(error) => {
@@ -106,6 +107,7 @@ export default class ServiceOperation
 		)
 
 		// SEND REQUEST
+		console.log(context + ':execute_remote:request=', request)
 		arg_svc_socket.emit(op_name, request)
 
 		

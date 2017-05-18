@@ -178,7 +178,7 @@ export default class UIRendering extends Loggable
 			(url)=>{
 				this.debug('process_rendering_result_scripts_urls:loop on url', url.id, url.src)
 
-				const url_src = this.get_asset_url(url.src, 'script', arg_credentials ? arg_credentials : this._runtime.session_credentials)
+				const url_src = this.get_asset_url(url.src, 'script', arg_credentials ? arg_credentials : this._runtime.get_session_credentials())
 
 				this.create_dom_url_element(arg_dom_element, 'script', url.id, url_src, 'text/javascript')
 			}
@@ -222,7 +222,7 @@ export default class UIRendering extends Loggable
 			(url)=>{
 				this.debug('process_rendering_result_styles_urls:loop on url', url.id, url.href)
 
-				const url_href = this.get_asset_url(url.href, 'style', arg_credentials ? arg_credentials : this._runtime.session_credentials)
+				const url_href = this.get_asset_url(url.href, 'style', arg_credentials ? arg_credentials : this._runtime.get_session_credentials())
 				
 				let e = document.getElementById(url.id)
 				if (e)

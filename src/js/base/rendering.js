@@ -281,7 +281,7 @@ export default class Rendering
 	{
 		this._component.enter_group('render')
 		
-		const credentials = this._component._runtime.session_credentials		
+		const credentials = this._component._runtime.get_session_credentials()		
 		const res_resolver = this._component._runtime.ui().get_resource_description_resolver()
 		const rf_resolver  = this._component._runtime.ui().get_rendering_function_resolver()
 		const rendering_resolver = RenderingResolverBuilder.from_resolvers('browser resolver from ui', res_resolver, rf_resolver)

@@ -351,7 +351,7 @@ export default class UI extends Loggable
 					this._rendering_plugins_counter += 1
 
 					const url = plugins_urls[plugin_name]
-					const url_src = this._ui_rendering.get_asset_url('plugins/' + url, 'script', this._runtime.session_credentials)
+					const url_src = this._ui_rendering.get_asset_url('plugins/' + url, 'script', this._runtime.get_session_credentials())
 					
 					// console.log('LOAD PLUGINS CLASSES:name=%s,url=%s', plugin_name, url_src)
 

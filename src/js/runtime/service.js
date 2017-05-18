@@ -24,7 +24,7 @@ const context = 'browser/runtime/service'
 export default class Service
 {
 	/**
-	 * Create a client Runtime instance.
+	 * Create a service wrapper instance.
 	 * 
 	 * @param {string} arg_svc_name - service name.
 	 * @param {object} arg_svc_settings - service settiings.
@@ -67,7 +67,7 @@ export default class Service
 	load(arg_settings)
 	{
 		const self = this
-		console.log(context + ':load: name=' + this.$name + ' settings=', arg_settings)
+		// console.log(context + ':load: name=' + this.$name + ' settings=', arg_settings)
 		
 		// SERVICE EXECUTION IS BROWSER OR SERVER (default)
 		if ('execution' in arg_settings)
@@ -84,7 +84,7 @@ export default class Service
 		{
 			ops = arg_settings['operations']
 		}
-		console.log(context + ':load: name=' + this.$name + ' ops=', ops)
+		// console.log(context + ':load: name=' + this.$name + ' ops=', ops)
 		
 		// GET POLLERS AND TIMELINE SETTINGS
 		const pollers_settings = ('pollers' in arg_settings) ? arg_settings.pollers : undefined
@@ -100,7 +100,7 @@ export default class Service
 		this.$ops.forEach(
 			(operation) => {
 				const op_name = operation
-				console.log(context + ':load:svc=%s:op=%s', this.get_name(), op_name)
+				// console.log(context + ':load:svc=%s:op=%s', this.get_name(), op_name)
 				
 				// OPERATION POLLER: REPEAT EVERY xxx MILLISECONDS FOR GLOBAL SETTINGS
 				if (! this.execute_on_browser && pollers_settings && (op_name in pollers_settings))
@@ -112,16 +112,16 @@ export default class Service
 				}
 
 				// OPERATION EXECUTION
-				const svc_operation = new ServiceOperation(op_name)
+				const svc_operation = new ServiceOperation(op_name, {service:this})
 				self[op_name] = (arg_operands) => {
-					console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, arg_operands)
+					// console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, arg_operands)
 
 					if (this.execute_on_browser)
 					{
 						return svc_operation.execute_on_browser(arg_operands, arg_settings.credentials)
 					}
 
-					return svc_operation.execute_on_server(svc_socket, svc_path, arg_operands, arg_settings.credentials)
+					return svc_operation.execute_on_server(svc_socket, svc_path, arg_operands, arg_settings.credentials, arg_settings.session_uid)
 				}
 				self[op_name].operation = svc_operation
 
@@ -202,11 +202,11 @@ export default class Service
 			{
 				console.log('create poller for operation:' + arg_op_name, arg_poller_settings.name, interval_ms)
 				
-				const payload = {
-					request: {
-						operation:arg_op_name,
-						operands:arg_op_opds
-					},
+				const request = {
+					session_uid:arg_session_uid,
+					service:self.get_name(),
+					operation:arg_op_name,
+					operands:arg_op_opds,
 					credentials:arg_credentials
 				}
 
@@ -214,7 +214,7 @@ export default class Service
 					arg_poller_settings.name,
 					() => {
 						// console.log('GLOBAL SETTINGS:create_timer svc_socket.emit', svc_path, op_name)
-						arg_socket.emit(arg_op_name, payload)
+						arg_socket.emit(arg_op_name, request)
 					},
 					interval_ms,
 					false
