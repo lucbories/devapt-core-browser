@@ -81,7 +81,7 @@ export default class ServiceOperation
 			session_uid:arg_session_uid,
 			service:this._settings.service.get_name(),
 			operation:op_name,
-			operands: T.isArray(arg_operands) ? arg_operands : [arg_operands],
+			operands: T.isArray(arg_operands) ? arg_operands : (arg_operands ? [arg_operands] : []),
 			credentials:arg_credentials
 		}
 		

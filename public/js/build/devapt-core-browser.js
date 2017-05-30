@@ -10829,7 +10829,7 @@ var ServiceOperation = function () {
 				session_uid: arg_session_uid,
 				service: this._settings.service.get_name(),
 				operation: op_name,
-				operands: _types2.default.isArray(arg_operands) ? arg_operands : [arg_operands],
+				operands: _types2.default.isArray(arg_operands) ? arg_operands : arg_operands ? [arg_operands] : [],
 				credentials: arg_credentials
 			};
 
@@ -52584,30 +52584,30 @@ var default_credentials = {
 };
 
 /**
- * @file Credentials class: contains authentication informations.
+ * Authentication informations, used on server and on browser.
  * 
  * @author Luc BORIES
- * 
  * @license Apache-2.0
+ * 
+* @example
+* 	API:
+* 		->set_credentials(arg_datas):nothing - check and set crendtials datas.
+* 		
+* 		->dump():string - dump credentials to a readable string without sensitive datas.
+* 		->digest_password(arg_string):string - hash credentials password (static).
+* 		
+* 		->serialize(arg_app_secret):string - transform credentials to a string.
+* 		->deserialize(string, arg_app_secret):boolean - load credentials from a string.string
+* 
+* 		->encrypt(arg_app_key):string - encrypted string.
+* 		->decrypt(arg_string, arg_app_key):boolean - success or failure.
+* 
+* 		->extract(arg_string):object - extract a record with credentials values from a formatted string.
  */
 
 var Credentials = function () {
 	/**
   * Create a Credentials instance. Store credentials values into an immutable Map.
- * 
- * 	API:
- * 		->set_credentials(arg_datas):nothing - check and set crendtials datas.
- * 		
- * 		->dump():string - dump credentials to a readable string without sensitive datas.
- * 		->digest_password(arg_string):string - hash credentials password (static).
- * 		
- * 		->serialize(arg_app_secret):string - transform credentials to a string.
- * 		->deserialize(string, arg_app_secret):boolean - load credentials from a string.string
- * 
- * 		->encrypt(arg_app_key):string - encrypted string.
- * 		->decrypt(arg_string, arg_app_key):boolean - success or failure.
- * 
- * 		->extract(arg_string):object - extract a record with credentials values from a formatted string.
  * 
   * @param {object} arg_datas - credentials datas object.
  * 
@@ -52620,14 +52620,28 @@ var Credentials = function () {
 		_classCallCheck(this, Credentials);
 
 		(0, _assert2.default)(_types2.default.isObject(arg_datas), context + ':bad runtime object');
+
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
 		this.is_credentials = true;
 
+		/**
+   * Credentials settings.
+   * @type {Immutable.Map}
+   */
 		this._credentials = (0, _immutable.fromJS)(default_credentials);
+
 		// this._crypt_mode = 'AES-CBC' // (other modes include: CFB, OFB, CTR, and GCM)
 		// this._crypt_key_length = 32
 		// this._crypt_iv_length = 8
 		// this._crypt_num_iterations = 10
 
+		/**
+   * Update handler.
+   * @type {function}
+   */
 		this.update_handler = update_handler;
 
 		this.set_credentials(arg_datas);
@@ -53049,7 +53063,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var context = 'common/base/distributed_logs';
 
 /**
- * @file DistributedLogs class for distributed communication.
+ * DistributedLogs class for distributed communication.
+ * 
  * @author Luc BORIES
  * @license Apache-2.0
  */
@@ -53060,26 +53075,49 @@ var DistributedLogs = function (_DistributedMessage) {
 	/**
   * Create a DistributedLogs instance.
  * 
- * @param {string} arg_sender_name - sender name.
+ * @param {string|object} arg_sender_name - sender name or message plain object (without other args).
  * @param {string} arg_target_name - recipient name.
  * @param {string} arg_timestamp - logs timestamp string.
  * @param {string} arg_level - logs level string.
- * @param {array} arg_values - logs values array.
+ * @param {array}  arg_values - logs values array.
+ * @param {string} arg_channel - channel name.
+ * @param {array}  arg_buses_path - message buses path (optional default []).
  * 
   * @returns {nothing}
   */
 	function DistributedLogs(arg_sender_name, arg_target_name, arg_timestamp, arg_level, arg_values) {
+		var arg_channel = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'logs';
+		var arg_buses_path = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : [];
+
 		_classCallCheck(this, DistributedLogs);
+
+		// CASE WITH ONLY ONE ARGUMENT: MESSAGE PLAIN OBJECT
+		if (arguments.length == 1) {
+			var plain_msg = arguments[0];
+			arg_sender_name = plain_msg._sender;
+			arg_target_name = plain_msg._target;
+			arg_timestamp = plain_msg._payload.ts;
+			arg_level = plain_msg._payload.level;
+			arg_values = plain_msg._payload.logs;
+			arg_channel = plain_msg._channel;
+			arg_buses_path = plain_msg._buses_path;
+		}
 
 		(0, _assert2.default)(_types2.default.isString(arg_timestamp), context + ':bad log timestamp string');
 		(0, _assert2.default)(_types2.default.isString(arg_level), context + ':bad log level string');
 		(0, _assert2.default)(_types2.default.isArray(arg_values), context + ':bad logs values array');
 
-		var _this = _possibleConstructorReturn(this, (DistributedLogs.__proto__ || Object.getPrototypeOf(DistributedLogs)).call(this, arg_sender_name, arg_target_name, { ts: arg_timestamp, level: arg_level, source: 'SERVER', logs: arg_values }));
+		var payload = { ts: arg_timestamp, level: arg_level, source: 'SERVER', logs: arg_values };
+
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
+		var _this = _possibleConstructorReturn(this, (DistributedLogs.__proto__ || Object.getPrototypeOf(DistributedLogs)).call(this, arg_sender_name, arg_target_name, payload, arg_channel, arg_buses_path));
 
 		_this.is_distributed_logs = true;
 
-		_this.set_channel('logs');
+		_this.set_channel(arg_channel);
 		return _this;
 	}
 
@@ -53187,51 +53225,124 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var context = 'common/base/distributed_message';
 
 /**
- * @file DistributedMessage class for distributed communication.
+ * DistributedMessage class for distributed communication.
+ * 
  * @author Luc BORIES
  * @license Apache-2.0
+ * 
+ * @example
+ * 	API:
+ * 		->get_channel():string - get bus channel name.
+ * 		->set_channel(arg_channel):nothing - set bus channel name.
+ * 		->get_sender():string - Get message sender.
+ * 		->...
  */
 
 var DistributedMessage = function () {
 	/**
   * Create a DistributedMessage instance.
  * 
- * 	API:
- * 		->get_channel():string - get bus channel name.
- * 		->set_channel(arg_channel):nothing - set bus channel name.
- * 
- * @param {string} arg_sender_name - sender name.
+ * @param {string|object} arg_sender_name - sender name or message plain object (without other args).
  * @param {string} arg_target_name - recipient name.
  * @param {object} arg_payload - message payload plain object.
  * @param {string} arg_channel - channel name.
+ * @param {array}  arg_buses_path - message buses path (optional default []).
  * 
   * @returns {nothing}
   */
 	function DistributedMessage(arg_sender_name, arg_target_name, arg_payload) {
 		var arg_channel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'default';
+		var arg_buses_path = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
 
 		_classCallCheck(this, DistributedMessage);
+
+		// CASE WITH ONLY ONE ARGUMENT: MESSAGE PLAIN OBJECT
+		if (arguments.length == 1) {
+			var plain_msg = arguments[0];
+			arg_sender_name = plain_msg._sender;
+			arg_target_name = plain_msg._target;
+			arg_payload = plain_msg._payload;
+			arg_channel = plain_msg._channel;
+			arg_buses_path = plain_msg._buses_path;
+		}
 
 		(0, _assert2.default)(_types2.default.isString(arg_sender_name), context + ':bad sender string');
 		(0, _assert2.default)(_types2.default.isString(arg_target_name), context + ':bad target string');
 		(0, _assert2.default)(_types2.default.isObject(arg_payload), context + ':bad payload object');
 
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
 		this.is_distributed_message = true;
 
+		/**
+   * Message sender name.
+   * @type {string}
+   */
 		this._sender = arg_sender_name;
+
+		/**
+   * Message target name.
+   * @type {string}
+   */
 		this._target = arg_target_name;
+
+		/**
+   * Message payload object.
+   * @type {object}
+   */
 		this._payload = arg_payload;
+
+		/**
+   * Message channel name.
+   * @type {string}
+   */
 		this._channel = arg_channel;
+
+		/**
+   * Message buses path.
+   * @type {array}
+   */
+		this._buses_path = _types2.default.isArray(arg_buses_path) ? arg_buses_path : [];
 	}
 
 	/**
-  * Get bus channel name.
+  * Add a step to message buses path.
   * 
-  * @returns {string}
+  * @param {string} arg_bus_name - message step bus name.
+  * 
+  * @returns {nothing}
   */
 
 
 	_createClass(DistributedMessage, [{
+		key: 'add_buses_step',
+		value: function add_buses_step(arg_bus_name) {
+			this._buses_path.push(arg_bus_name);
+		}
+
+		/**
+   * Test if message has a step into buses path.
+   * 
+   * @param {string} arg_bus_name - message step bus name.
+   * 
+   * @returns {nothing}
+   */
+
+	}, {
+		key: 'has_buses_step',
+		value: function has_buses_step(arg_bus_name) {
+			return this._buses_path.indexOf(arg_bus_name) > -1;
+		}
+
+		/**
+   * Get bus channel name.
+   * 
+   * @returns {string}
+   */
+
+	}, {
 		key: 'get_channel',
 		value: function get_channel() {
 			return this._channel;
@@ -53338,7 +53449,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var context = 'common/base/errorable';
 
 /**
- * @file Base class to deal with errors.
+ * Base class to deal with errors.
+ * @abstract
+ * 
  * @author Luc BORIES
  * @license Apache-2.0
  */
@@ -53348,7 +53461,6 @@ var Errorable = function (_Loggable) {
 
 	/**
   * Create an Errorable instance.
-  * @extends Loggable
   * 
   * @param {string} arg_log_context - trace context.
   * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
@@ -53360,10 +53472,19 @@ var Errorable = function (_Loggable) {
 
 		var my_context = arg_log_context ? arg_log_context : context;
 
+		/**
+   * Has error flag (default false).
+   * @type {boolean}
+   */
 		var _this = _possibleConstructorReturn(this, (Errorable.__proto__ || Object.getPrototypeOf(Errorable)).call(this, my_context, arg_logger_manager));
 
-		_this.$has_error = false;
-		_this.$error_msg = null;
+		_this._has_error = false;
+
+		/**
+   * Error text (default null).
+   * @type {string}
+   */
+		_this._error_msg = null;
 		return _this;
 	}
 
@@ -53377,8 +53498,8 @@ var Errorable = function (_Loggable) {
 	_createClass(Errorable, [{
 		key: 'error',
 		value: function error(arg_msg) {
-			this.$has_error = true;
-			this.$error_msg = arg_msg;
+			this._has_error = true;
+			this._error_msg = arg_msg;
 			_get(Errorable.prototype.__proto__ || Object.getPrototypeOf(Errorable.prototype), 'error', this).call(this, arg_msg);
 		}
 
@@ -53390,7 +53511,7 @@ var Errorable = function (_Loggable) {
 	}, {
 		key: 'has_error',
 		value: function has_error() {
-			return this.$has_error;
+			return this._has_error;
 		}
 
 		/**
@@ -53401,7 +53522,7 @@ var Errorable = function (_Loggable) {
 	}, {
 		key: 'get_error_msg',
 		value: function get_error_msg() {
-			return this.$error_msg;
+			return this._error_msg;
 		}
 
 		/**
@@ -53476,7 +53597,8 @@ var context = 'common/base/instance';
 var NOT_STORED_COLLECTIONS = ['defined_topology', 'deployed_topology', 'registered_services', 'components', 'svc_providers', 'svc_consumers', 'buses', 'remote_bus_gateways'];
 
 /**
- * @file Devapt base class for resources, servers, Collection items...
+ * Devapt base class for resources, servers, Collection items...
+ * @abstract
  * 
  * @author Luc BORIES
  * 
@@ -53488,8 +53610,6 @@ var Instance = function (_Stateable) {
 
 	/**
   * Create an instance.
-  * @extends Stateable
-  * @abstract
   * 
   * @param {string} arg_collection - collection name.
   * @param {string} arg_class - class name.
@@ -53530,18 +53650,46 @@ var Instance = function (_Stateable) {
 		}
 
 		// CLASS ATTRIBUTES
+
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
 		var _this = _possibleConstructorReturn(this, (Instance.__proto__ || Object.getPrototypeOf(Instance)).call(this, arg_settings, _runtime2.default, default_state, my_context, arg_logger_manager));
 
 		_this.is_instance = true;
-		// this.is_weighted = false
 
 		// INSTANCE ATTRIBUTES
+
+		/**
+   * Instance is loaded flag.
+   * @type {boolean}
+   */
 		_this.is_loaded = false;
+
+		/**
+   * Instance id.
+   * @type {string}
+   */
 		_this.$id = my_uid;
+
+		/**
+   * Instance name.
+   * @type {string}
+   */
 		_this.$name = arg_name;
+
+		/**
+   * Instance collection name.
+   * @type {string}
+   */
 		_this.$type = arg_collection;
+
+		/**
+   * Instance class name.
+   * @type {string}
+   */
 		_this.$class = arg_class;
-		// this.$weight = 1
 
 		// REGISTER INSTANCE IN TOPOLOGY
 		if ((0, _is_browser2.is_server)()) {
@@ -53581,31 +53729,6 @@ var Instance = function (_Stateable) {
 		value: function get_name() {
 			return this.$name;
 		}
-
-		/**
-   * Get instance weight.
-   * 
-   * @returns {number}
-   */
-		// get_weight()
-		// {
-		// 	return this.$weight
-		// }
-
-
-		/**
-   * Set instance weight.
-   * 
-   * @param {number} arg_weight - instance weight.
-   * 
-   * @returns {nothing}
-   */
-		// set_weight(arg_weight)
-		// {
-		// 	assert( T.isNumber(arg_weight), context + ':bad weight value')
-		// 	this.$weight = arg_weight
-		// }
-
 
 		/**
    * Get instance type.
@@ -53728,51 +53851,47 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// import {is_browser, is_server} from '../utils/is_browser'
-// import runtime                 from '../base/runtime'
-
-
 var context = 'common/base/loggable';
 
-// const server_runtime_file = '../base/runtime'
-// const browser_runtime_file = 'see window.devapt().runtime()'
-
-
 /**
- * @file Base class to deal with traces.
+ * Base class to deal with traces.
+ * @abstract
+ * 
  * @author Luc BORIES
  * @license Apache-2.0
+ * 
+ * @example
+* API:
+* 		get_context():string - get instance context.
+* 		get_class):string - get instance class.
+* 		get_name():string - get instance name.
+* 
+* 		should_trace(arg_traces_cfg:plain object):boolean - test if loggers should trace this instance.
+* 
+* 		get_logger_manager():LoggerManager
+* 		update_trace_enabled():nothing
+* 
+* 		enable_trace():nothing
+* 		disable_trace():nothing
+* 		get_trace():boolean
+* 		set_trace(arg_value):nothing
+* 		toggle_trace():nothing
+* 
+* 		debug(...args):nothing
+* 		info(...args):nothing
+* 		warn(...args):nothing
+* 		error(...args):nothing
+* 
+* 		enter_group(arg_group) leave_group(arg_group):nothing
+* 		separate_level_1():nothing
+* 		separate_level_2():nothing
+* 		separate_level_3():nothing
+* 
  */
 
 var Loggable = function () {
 	/**
   * Create a Loggable instance.
-  * 
-  * API:
-  * 		get_context():string - get instance context.
-  * 		get_class):string - get instance class.
-  * 		get_name():string - get instance name.
-  * 
-  * 		should_trace(arg_traces_cfg:plain object):boolean - test if loggers should trace this instance.
-  * 
-  * 		get_logger_manager():LoggerManager
-  * 		update_trace_enabled():nothing
-  * 
-  * 		enable_trace():nothing
-  * 		disable_trace():nothing
-  * 		get_trace():boolean
-  * 		set_trace(arg_value):nothing
-  * 		toggle_trace():nothing
-  * 
-  * 		debug(...args):nothing
-  * 		info(...args):nothing
-  * 		warn(...args):nothing
-  * 		error(...args):nothing
-  * 
-  * 		enter_group(arg_group) leave_group(arg_group):nothing
-  * 		separate_level_1():nothing
-  * 		separate_level_2():nothing
-  * 		separate_level_3():nothing
   * 
   * @param {string} arg_log_context - trace context.
   * @param {LoggerManager} arg_logger_manager - logger manager instance.
@@ -53782,10 +53901,29 @@ var Loggable = function () {
 	function Loggable(arg_log_context, arg_logger_manager) {
 		_classCallCheck(this, Loggable);
 
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
 		this.is_loggable = true;
+
+		/**
+   * Log context.
+   * @type {string}
+   */
 		this.$context = _types2.default.isString(arg_log_context) ? arg_log_context : context;
 
+		/**
+   * Trace is enabled for this flag.
+   * @type {boolean}
+   */
 		this.is_trace_enabled = true;
+
+		/**
+   * Logger manager instance (default undefined)
+   * @type {LoggerManager}
+   */
+		this._logger_manager = undefined;
 
 		if (_types2.default.isObject(arg_logger_manager) && arg_logger_manager.is_logger_manager) {
 			this._logger_manager = arg_logger_manager;
@@ -54235,21 +54373,38 @@ exports.default = Loggable;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
 
 // NPM IMPORTS
 
 // COMMON IMPORTS
 
+
+/**
+ * Global runtime singleton.
+ * @type {Runtime}
+ */
 var _runtime_instance = undefined;
 
+/**
+ * Register singleton runtime instance.
+ * 
+ * @param {Runtime} arg_runtime - Runtime singleton.
+ * 
+ * @returns {nothing}
+ */
 var register_runtime = exports.register_runtime = function register_runtime(arg_runtime) {
-	_runtime_instance = arg_runtime;
+  _runtime_instance = arg_runtime;
 };
 
+/**
+ * Get singleton runtime instance.
+ * 
+ * @returns {Runtime} - Runtime singleton.
+ */
 var get_runtime = exports.get_runtime = function get_runtime() {
-	return _runtime_instance;
+  return _runtime_instance;
 };
 
 exports.default = _runtime_instance;
@@ -54295,10 +54450,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var context = 'browser/runtime';
 
 /**
- * @file base class for runtime - main library interface.
+ * Base class for runtime - main library interface.
+ * @abstract
  * 
  * @author Luc BORIES
- * 
  * @license Apache-2.0
  */
 
@@ -54307,7 +54462,6 @@ var RuntimeBase = function (_Settingsable) {
 
 	/**
   * Create Runtime base instance.
-  * @extends Settingsable
   * 
   * @param {string} arg_log_context - logging context.
   * 
@@ -54325,9 +54479,22 @@ var RuntimeBase = function (_Settingsable) {
 
 		logger_manager._runtime = _this;
 
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
 		_this.is_base_runtime = true;
 
+		/**
+   * Runtime state (defautl undefined).
+   * @type {object}
+   */
 		_this.current_state = undefined;
+
+		/**
+   * Runtime state store (defautl undefined).
+   * @type {object}
+   */
 		_this._state_store = undefined;
 
 		if (!_this.is_server_runtime) {
@@ -54441,9 +54608,23 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var context = 'common/base/settingsable';
 
 /**
- * @file Settingsable base class: child classes are able to manage settings.
+ * Settingsable base class: child classes are able to manage settings.
+ * @abstract
+ * 
  * @author Luc BORIES
  * @license Apache-2.0
+ * 
+ * @example
+* Settings are immutable values which define instance initial configuration.
+* Settings are not intended to act as a mutable state.
+* 
+* API:
+* 		set_settings(arg_settings:plain object or Immutable object):nothing - replace settings Immutable.Map
+* 		get_settings(): Immutable.Map - get settings tree.
+* 		has_setting(arg_name:string|array): boolean - test if a value is avalaible for given key or path.
+* 		get_setting(arg_name:string|array, arg_default): Immutable or js value - get value from a path or a key.
+* 		set_setting(arg_name:string|array, arg_value): nothing - set or replace a value at given key or path.
+* 
  */
 
 var Settingsable = function (_Errorable) {
@@ -54451,17 +54632,6 @@ var Settingsable = function (_Errorable) {
 
 	/**
   * Create a Settingsable instance.
-  * @extends Loggable
-  * 
-  * Settings are immutable values which define instance initial configuration.
-  * Settings are not intended to act as a mutable state.
-  * 
-  * API:
-  * 		set_settings(arg_settings:plain object or Immutable object):nothing - replace settings Immutable.Map
-  * 		get_settings(): Immutable.Map - get settings tree.
-  * 		has_setting(arg_name:string|array): boolean - test if a value is avalaible for given key or path.
-  * 		get_setting(arg_name:string|array, arg_default): Immutable or js value - get value from a path or a key.
-  * 		set_setting(arg_name:string|array, arg_value): nothing - set or replace a value at given key or path.
   * 
   * @param {Immutable.Map|object} arg_settings - instance settings map.
   * @param {string} arg_log_context - trace context string.
@@ -54487,7 +54657,19 @@ var Settingsable = function (_Errorable) {
 			}
 		}
 
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
 		var _this = _possibleConstructorReturn(this, (Settingsable.__proto__ || Object.getPrototypeOf(Settingsable)).call(this, my_context, logger_manager));
+
+		_this.is_settable = true;
+
+		/**
+   * Instance settings (default undefined).
+   * @type {object|Immutable.Map}
+   */
+		_this.$settings = undefined;
 
 		_this.set_settings(arg_settings);
 		return _this;
@@ -54640,10 +54822,6 @@ var _settingsable = require('./settingsable');
 
 var _settingsable2 = _interopRequireDefault(_settingsable);
 
-var _runtime = require('./runtime');
-
-var _runtime2 = _interopRequireDefault(_runtime);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -54659,11 +54837,27 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var context = 'common/base/stateable';
 
 /**
- * @file Stateable base class.
+ * Stateable base class.
+ * @abstract
  * 
  * @author Luc BORIES
- * 
  * @license Apache-2.0
+ * 
+ * @example
+* API:
+* 		->get_initial_state():plain object - get state at creation.
+* 		->get_state():plain object - get current state.
+* 		->get_state_store():object - get state store.
+* 		->get_state_path():array|string - get state path into store.
+* 		->get_state_value(arg_key_or_path, arg_default_value=undefined):any - get a state value at path.
+* 
+* 		->handle_state_change(arg_previous_state, arg_new_state):nothing - handle state changes (to be implemented in sub classes)
+* 		->register_state_value_change_handle(arg_path, arg_listener):nothing - Register a state value change listener.
+* 
+* 		->dispatch_action(arg_action_type, arg_options):nothing - dispatch state changes actions.
+* 
+* 		->get_name():string - get instance name.
+* 
  */
 
 var Stateable = function (_Settingsable) {
@@ -54671,21 +54865,6 @@ var Stateable = function (_Settingsable) {
 
 	/**
   * Creates an instance of Stateable: an object with an observable mutable state.
-  * @extends Settingsable
-  * 
-  * API:
-  * 		->get_initial_state():plain object - get state at creation.
-  * 		->get_state():plain object - get current state.
-  * 		->get_state_store():object - get state store.
-  * 		->get_state_path():array|string - get state path into store.
-  * 		->get_state_value(arg_key_or_path, arg_default_value=undefined):any - get a state value at path.
-  * 
-  * 		->handle_state_change(arg_previous_state, arg_new_state):nothing - handle state changes (to be implemented in sub classes)
-  * 		->register_state_value_change_handle(arg_path, arg_listener):nothing - Register a state value change listener.
-  * 
-  * 		->dispatch_action(arg_action_type, arg_options):nothing - dispatch state changes actions.
-  * 
-  * 		->get_name():string - get instance name.
   * 
   * @param {Immutable.Map|object} arg_settings - settings plain object
   * @param {object} arg_runtime - client runtime.
@@ -54700,11 +54879,19 @@ var Stateable = function (_Settingsable) {
 
 		var log_context = arg_log_context ? arg_log_context : context;
 
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
 		var _this = _possibleConstructorReturn(this, (Stateable.__proto__ || Object.getPrototypeOf(Stateable)).call(this, arg_settings, log_context, arg_logger_manager));
 
 		_this.is_stateable = true;
 
 		// GET RUNTIME
+		/**
+   * Runtime isntance.
+   * @type {Runtime}
+   */
 		_this._runtime = arg_runtime;
 		if (!arg_runtime) {
 			if (arg_settings.get) {
@@ -54715,16 +54902,33 @@ var Stateable = function (_Settingsable) {
 		}
 		(0, _assert2.default)(_types2.default.isObject(_this._runtime) && _this._runtime.is_base_runtime, context + ':constructor:bad this._runtime instance (' + log_context + ')');
 
+		/**
+   * Initial state.
+   * @type {object}
+   */
 		_this._initial_state = arg_state;
+
+		/**
+   * State store.
+   * @type {StateStore}
+   */
 		_this._state_store = _this._runtime.get_state_store();
 		(0, _assert2.default)(_types2.default.isObject(_this._state_store), context + ':constructor:bad state_store object (' + log_context + ')');
 
 		// SET STATE PATH
+		/**
+   * State path in runtime state.
+   * @type {array}
+   */
 		_this.state_path = undefined;
 		if (arg_state && _types2.default.isFunction(arg_state.has) && _types2.default.isFunction(arg_state.get) && arg_state.has('state_path')) {
 			_this.state_path = arg_state.get('state_path').toArray();
 		}
 
+		/**
+   * State changes handlers.
+   * @type {array}
+   */
 		_this._state_value_listeners = [];
 
 		// console.info(context + ':constructor:creating component ' + this.get_name())
@@ -54954,7 +55158,7 @@ var Stateable = function (_Settingsable) {
 exports.default = Stateable;
 
 
-},{"../utils/types":225,"./runtime":158,"./settingsable":160,"assert":35,"immutable":274}],162:[function(require,module,exports){
+},{"../utils/types":225,"./settingsable":160,"assert":35,"immutable":274}],162:[function(require,module,exports){
 (function (__dirname){
 'use strict';
 
@@ -56656,7 +56860,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var context = 'common/messaging/stream';
 
 /**
- * @file Stream class for BaconJS stream wrapping.
+ * Stream class for BaconJS stream wrapping.
  * 
  * @author Luc BORIES
  * @license Apache-2.0
@@ -56665,6 +56869,7 @@ var context = 'common/messaging/stream';
 var Stream = function () {
 	/**
   * Create a stream.
+  * 
   * @returns {nothing}
   */
 	function Stream() {
@@ -57081,10 +57286,13 @@ var FeaturesPlugin = function (_Plugin) {
 		value: function load_feature_class(arg_path) {
 			(0, _assert2.default)(_types2.default.isString(arg_path), context + ':bad path string');
 
-			console.log(context + ':load_feature_class:load package');
+			// console.log(context + ':load_feature_class:load package')
+
 			try {
 				var file_path_name = this._runtime.context.get_absolute_package_path(arg_path);
-				console.log(context + ':load_feature_class:load package [' + arg_path + '] file=', file_path_name);
+
+				// console.log(context + ':load_feature_class:load package [' + arg_path + '] file=', file_path_name)
+
 				var required = require(file_path_name);
 				if (required) {
 					var FeatureClass = 'default' in required ? required.default : required;
@@ -57164,10 +57372,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var context = 'common/plugins/plugin';
 
 /**
- * @file Plugins base class.
+ * Plugins base class.
  * 
  * @author Luc BORIES
- * 
  * @license Apache-2.0
  */
 
@@ -57176,7 +57383,6 @@ var Plugin = function (_Instance) {
 
 	/**
   * Create a plugin instance.
-  * @extends Instance
   * 
   * @param {PluginsManager} arg_manager - plugins manager.
   * @param {string} arg_name - plugin name.
@@ -57207,13 +57413,30 @@ var Plugin = function (_Instance) {
 			arg_settings.logger_manager = arg_runtime.get_logger_manager();
 		}
 
+		/**
+   * Class type flag.
+   * @type {boolean}
+   */
 		var _this = _possibleConstructorReturn(this, (Plugin.__proto__ || Object.getPrototypeOf(Plugin)).call(this, 'plugins', arg_class ? arg_class.toString() : 'Plugin', arg_name, arg_settings, arg_log_context));
 
 		_this.is_plugin = true;
 
-		// this._runtime = arg_runtime
+		/**
+   * Plugin version.
+   * @type {string}
+   */
 		_this.$version = arg_settings.version;
+
+		/**
+   * Plugins manager.
+   * @type {PluginManager}
+   */
 		_this.manager = arg_manager;
+
+		/**
+   * Enabled flag.
+   * @type {boolean}
+   */
 		_this.is_enabled = false;
 		return _this;
 	}
@@ -57239,10 +57462,11 @@ var Plugin = function (_Instance) {
    * 
    * @returns {object} - a promise object of a boolean result (success:true, failure:false).
    */
+		/* eslint no-unused-vars: "off" */
 
 	}, {
 		key: 'enable',
-		value: function enable() /*arg_context*/{
+		value: function enable(arg_context) {
 			this.is_enabled = true;
 			this.manager.enabled_plugins.add(this);
 			return Promise.resolve(true);
@@ -57256,10 +57480,11 @@ var Plugin = function (_Instance) {
    * 
    * @returns {object} - a promise object of a boolean result (success:true, failure:false).
    */
+		/* eslint no-unused-vars: "off" */
 
 	}, {
 		key: 'disable',
-		value: function disable() /*arg_context*/{
+		value: function disable(arg_context) {
 			this.is_enabled = false;
 			this.manager.enabled_plugins.remove(this);
 			return Promise.resolve(true);
@@ -59546,6 +59771,8 @@ var RenderingBuilder = function (_RenderingBuilderAsse) {
 		/**
    * Get rendering function resolver.
    * 
+   * @param {Credentials} arg_credentials - credentials instance.
+   * 
    * @returns {Function} - rendering function resolver.
    */
 
@@ -59563,7 +59790,7 @@ var RenderingBuilder = function (_RenderingBuilderAsse) {
    * 
    * @returns {RenderingResult} - rendering result instance.
    */
-		value: function _render_content_on_browser(arg_view_name, arg_menubar_name, arg_credentials) {
+		value: function _render_content_on_browser(arg_view, arg_menubar, arg_credentials) {
 			(0, _assert2.default)(_types2.default.isObject(this._runtime) && this._runtime.is_base_runtime, context + ':_render_content_on_browser:bad this._runtime instance');
 
 			var store = this._runtime.get_state_store();
@@ -59579,7 +59806,7 @@ var RenderingBuilder = function (_RenderingBuilderAsse) {
 			// GET DEFAULT MENUBAR
 			var default_menubar_name = state.get('default_menubar', undefined);
 
-			return this._render_content_common(arg_view_name, arg_menubar_name, arg_credentials, default_view_name, default_menubar_name, rendering_resolver);
+			return this._render_content_common(arg_view, arg_menubar, arg_credentials, default_view_name, default_menubar_name, rendering_resolver);
 		}
 
 		/**
@@ -59595,7 +59822,7 @@ var RenderingBuilder = function (_RenderingBuilderAsse) {
 
 	}, {
 		key: '_render_content_on_server',
-		value: function _render_content_on_server(arg_view_name, arg_menubar_name, arg_credentials) {
+		value: function _render_content_on_server(arg_view, arg_menubar, arg_credentials) {
 			// GET TOPOLOGY DEFINED APPLICATION
 			var topology_define_app = this.get_topology_defined_application(arg_credentials);
 			(0, _assert2.default)(topology_define_app, context + ':render_content:bad topology_define_app');
@@ -59608,7 +59835,7 @@ var RenderingBuilder = function (_RenderingBuilderAsse) {
 
 			var resolver = _rendering_resolver2.default.from_topology('server resolver from topology', topology_define_app);
 
-			return this._render_content_common(arg_view_name, arg_menubar_name, arg_credentials, default_view_name, default_menubar_name, resolver);
+			return this._render_content_common(arg_view, arg_menubar, arg_credentials, default_view_name, default_menubar_name, resolver);
 		}
 
 		/**
@@ -59627,9 +59854,9 @@ var RenderingBuilder = function (_RenderingBuilderAsse) {
 
 	}, {
 		key: '_render_content_common',
-		value: function _render_content_common(arg_view_name, arg_menubar_name, arg_credentials, arg_default_view_name, arg_default_menubar_name, arg_rendering_resolver) {
-			var menubar = arg_menubar_name ? arg_menubar_name : arg_default_menubar_name;
-			var view = arg_view_name ? arg_view_name : arg_default_view_name;
+		value: function _render_content_common(arg_view, arg_menubar, arg_credentials, arg_default_view_name, arg_default_menubar_name, arg_rendering_resolver) {
+			var menubar = arg_menubar ? arg_menubar : arg_default_menubar_name;
+			var view = arg_view ? arg_view : arg_default_view_name;
 			var content = this.get_content_description(view, menubar);
 
 			// DEBUG
@@ -61492,10 +61719,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var context = 'common/state_store/redux_store';
 
 /**
- * @file Immutable.Map class to deal with state storing and mutations.
+ * Immutable.Map class to deal with state storing and mutations.
  * 
  * @author Luc BORIES
- * 
  * @license Apache-2.0
  */
 
@@ -61504,7 +61730,6 @@ var MapStore = function (_StateStore) {
 
 	/**
   * Create a Immutable.Map state Store instance.
-  * @extends StateStore
   * 
   * @param {object} arg_initial_state - initial state.
   * @param {string} arg_log_context - trace context.
@@ -61560,10 +61785,11 @@ var MapStore = function (_StateStore) {
    * 
    * @returns {nothing}
    */
+		/* eslint no-unused-vars: "off" */
 
 	}, {
 		key: 'dispatch',
-		value: function dispatch() /*arg_action*/{
+		value: function dispatch(arg_action) {
 			throw Error('Map store does not implement dispatch method');
 		}
 
@@ -61574,10 +61800,11 @@ var MapStore = function (_StateStore) {
    * 
    * @returns {function} - unsubscribe function
    */
+		/* eslint no-unused-vars: "off" */
 
 	}, {
 		key: 'subscribe',
-		value: function subscribe() /*arg_handle*/{
+		value: function subscribe(arg_handle) {
 			throw Error('Map store does not implement subscribe method');
 		}
 	}]);
@@ -61632,6 +61859,7 @@ var ReduxStore = function (_StateStore) {
 
 	/**
   * Create a Redux state Store instance.
+  * @class ReduxStore
   * @extends StateStore
   * 
   * @param {function} arg_reducer - state reducer.
@@ -61754,10 +61982,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var context = 'common/state_store/store';
 
 /**
- * @file Base class to deal with state storing and mutations.
+ * Base class to deal with state storing and mutations.
  * 
  * @author Luc BORIES
- * 
  * @license Apache-2.0
  */
 
@@ -61766,7 +61993,6 @@ var StateStore = function (_Loggable) {
 
 	/**
   * Create a state Store instance.
-  * @extends Loggable
   * 
   * @param {string} arg_log_context - trace context.
   * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
@@ -61807,10 +62033,11 @@ var StateStore = function (_Loggable) {
    * 
    * @returns {nothing}
    */
+		/* eslint no-unused-vars: "off" */
 
 	}, {
 		key: 'set_state',
-		value: function set_state() /*arg_state*/{}
+		value: function set_state(arg_state) {}
 
 		/**
    * Dispatch a requested action to mutate current state.
@@ -61820,10 +62047,11 @@ var StateStore = function (_Loggable) {
    * 
    * @returns {nothing}
    */
+		/* eslint no-unused-vars: "off" */
 
 	}, {
 		key: 'dispatch',
-		value: function dispatch() /*arg_action*/{}
+		value: function dispatch(arg_action) {}
 
 		/**
    * Dispatch a state action.
@@ -61848,10 +62076,11 @@ var StateStore = function (_Loggable) {
    * 
    * @returns {function} - unsubscribe function
    */
+		/* eslint no-unused-vars: "off" */
 
 	}, {
 		key: 'subscribe',
-		value: function subscribe() /*arg_handle*/{}
+		value: function subscribe(arg_handle) {}
 	}]);
 
 	return StateStore;
@@ -62557,8 +62786,14 @@ function load_nodes(logs, arg_nodes_config, arg_base_dir) {
 		// CHECK MODULES
 		(0, _assert2.default)(_types2.default.isObject(arg_nodes_config), error_msg_bad_config);
 
-		// LOOP ON PLUGINS
+		// LOOP ON NODES
+		var has_error = false;
 		Object.keys(arg_nodes_config).forEach(function (node_name) {
+			// SKIP PROCESSING ON ERROR
+			if (has_error) {
+				return;
+			}
+
 			var node_obj = arg_nodes_config[node_name];
 
 			// CHECK ATTRIBUTES
@@ -62568,6 +62803,12 @@ function load_nodes(logs, arg_nodes_config, arg_base_dir) {
 			(0, _assert2.default)(_types2.default.isObject(node_obj.servers), error_msg_bad_node_servers);
 
 			load_node_servers(logs, node_obj.servers, node_name, node_obj.host, arg_base_dir);
+			console.log(context + ':load_nodes:servers=[%s]', JSON.stringify(node_obj.servers));
+
+			if (node_obj.servers.error) {
+				arg_nodes_config = { error: node_obj.servers.error };
+				has_error = true;
+			}
 		});
 	} catch (e) {
 		arg_nodes_config = { error: { context: context, exception: e } };
@@ -62579,18 +62820,22 @@ function load_nodes(logs, arg_nodes_config, arg_base_dir) {
 function load_node_servers(logs, arg_servers_config, arg_node_name, arg_host /*, arg_base_dir*/) {
 	logs.info(context, 'loading config.nodes.' + arg_node_name + '.servers');
 
+	var current_server = undefined;
 	try {
 		// CHECK MODULES
 		(0, _assert2.default)(_types2.default.isObject(arg_servers_config), error_msg_bad_config);
 
 		// LOOP ON PLUGINS
-		Object.keys(arg_servers_config).forEach(function (node_name) {
-			logs.info(context, 'loading config.nodes.' + arg_node_name + '.servers.' + node_name);
-			var server_obj = arg_servers_config[node_name];
+		Object.keys(arg_servers_config).forEach(function (server_name) {
+			current_server = server_name;
+
+			logs.info(context, 'loading config.nodes.' + arg_node_name + '.servers.' + server_name);
+
+			var server_obj = arg_servers_config[server_name];
 
 			// CHECK ATTRIBUTES
 			(0, _assert2.default)(_types2.default.isObject(server_obj), error_msg_bad_node_servers_server);
-			(0, _assert2.default)(_types2.default.isNumber(server_obj.port), error_msg_bad_node_servers_server_port);
+			(0, _assert2.default)(_types2.default.isNotEmptyStringOrNumber(server_obj.port), error_msg_bad_node_servers_server_port);
 			(0, _assert2.default)(_types2.default.isString(server_obj.type), error_msg_bad_node_servers_server_type);
 			(0, _assert2.default)(_types2.default.isString(server_obj.protocole), error_msg_bad_node_servers_server_protocole);
 
@@ -62600,9 +62845,10 @@ function load_node_servers(logs, arg_servers_config, arg_node_name, arg_host /*,
 			server_obj.host = arg_host;
 		});
 	} catch (e) {
-		arg_servers_config = { error: { context: context + ':load servers for node [' + arg_node_name + ']', exception: e } };
+		arg_servers_config = { error: { context: context + ':load servers for node [' + arg_node_name + '] server [' + current_server + ']', exception: e } };
 	}
 
+	console.log(context + ':load_node_servers:servers=[%s]', JSON.stringify(arg_servers_config));
 	return arg_servers_config;
 }
 
@@ -63410,6 +63656,8 @@ var RegistryStore = function (_MapStore) {
 
 	/**
   * Create RegistryStore instance.
+  * @class RegistryStore
+  * @extends MapStore
   * 
   * @param {object} arg_initial_state - initial state to populate registry.
   * @param {string} arg_log_context - trace context.
@@ -63673,7 +63921,8 @@ var TopologyRegistry = function (_RegistryStore) {
 	_inherits(TopologyRegistry, _RegistryStore);
 
 	/**
-  * Create a TopologyStore instance.
+  * Create a TopologyRegistry instance.
+  * @class TopologyRegistry
   * @extends RegistryStore
   * 
   * @param {LoggerManager} arg_logger_manager - logger manager object.
@@ -64969,6 +65218,14 @@ types.forEach(function (type) {
 
 types_fn.isNotEmptyString = function (o) {
 	return types_fn.isString(o) && o.length > 0;
+};
+
+types_fn.isStringOrNumber = function (o) {
+	return types_fn.isString(o) || types_fn.isNumber(o);
+};
+
+types_fn.isNotEmptyStringOrNumber = function (o) {
+	return types_fn.isNotEmptyString(o) || types_fn.isNumber(o);
 };
 
 types_fn.isNotEmptyArray = function (o) {
