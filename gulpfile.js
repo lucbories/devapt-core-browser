@@ -7,10 +7,12 @@ var livereload = require('gulp-livereload')
 
 var SRC_JS_FILES = 'src/js/**/*.js'
 var DST_JS_DIR = 'dist/js'
+var BUILD_JS_DIR = 'public/js/build'
 
 var plugins = require('gulp-load-plugins')( { DEBUG:false } )
 
 var clean_function = () => {
+	del(BUILD_JS_DIR)
 	return del(DST_JS_DIR)
 }
 
@@ -34,7 +36,7 @@ getTask('gulp_dist_js_index_bundle', 'dist_js_index_bundle')
 
 gulp.task('watch',
 	() => {
-		gulp.watch(SRC_JS, gulp.series('build', 'reload') )
+		gulp.watch(SRC_JS_FILES, gulp.series('build', 'reload') )
 		.on('change',
 			(path, stats) => {
 				console.log('File ' + path + ' was changed, running task watch...')	

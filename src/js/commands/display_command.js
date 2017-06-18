@@ -13,17 +13,22 @@ const context = 'browser/commands/display_command'
 
 
 /**
- * @file Base Command class.
+ * Display command class.
  * 
  * @author Luc BORIES
- * 
  * @license Apache-2.0
+ * 
+ * @example
+ * 
+ * 	API
+ * 		->do():Promise - do display.
+ * 		->undo():Promise - undo display and display history previous content.
+ * 
  */
 export default class DisplayCommand extends Command
 {
 	/**
 	 * Creates an instance of DisplayCommand.
-	 * @extends Command
 	 * 
 	 * A DisplayCommand configuration is a simple object with:
 	 * 
@@ -39,10 +44,6 @@ export default class DisplayCommand extends Command
 	 * Browser route attributes:
 	 * 		- view:string - view name to render on browser side.
 	 * 		- menubar:string - menubar name to render on browser side (optional).
-	 * 
-	 * 	API
-	 * 		->do():Promise - do display.
-	 * 		->undo():Promise - undo display and display history previous content.
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_settings - command settings.

@@ -346,7 +346,7 @@ export default class ClientRuntime extends RuntimeBase
 		// CREATE STATE STORE
 		const reducer = this.get_store_reducers()
 		const self = this
-		this._state_store = new ReduxStore(reducer, initial_app_state, context, this.logger_manager)
+		this._state_store = new ReduxStore(reducer, initial_app_state, context, this.get_logger_manager())
 		this._state_store_unsubscribe = this._state_store.subscribe( self.handle_store_change.bind(self) )
 		this._state_store.dispatch( {type:'store_created'} )
 		

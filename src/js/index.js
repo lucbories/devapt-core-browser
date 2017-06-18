@@ -8,7 +8,7 @@ import RenderingPlugin        from '../../node_modules/devapt-core-common/dist/j
 import runtime          from './runtime/client_runtime'
 import Component        from './base/component'
 import Container        from './base/container'
-
+import WorkerCommand    from './commands/worker_command'
 
 /**
  * Main public part of Devapt library on client side

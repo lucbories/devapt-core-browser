@@ -51,7 +51,7 @@ export default class UIFactory extends Loggable
 	 */
 	constructor(arg_runtime, arg_store)
 	{
-		super(context)
+		super(context, arg_runtime.get_logger_manager())
 
 		this.is_ui_factory = true
 
@@ -232,8 +232,11 @@ export default class UIFactory extends Loggable
 			return { component:undefined, promise:Promise.reject(context + msg) }
 		}
 
+		// CREATE COMPONENT
 		const component = new component_class(this._runtime, comp_state)
 		this._cache[arg_component_name] = component
+
+		// LOAD COMPONENT AND INIT BINDINGS
 		let promise = component.render()
 		.then(
 			()=>{
@@ -399,10 +402,10 @@ export default class UIFactory extends Loggable
 		if ( arg_state.has('name') )
 		{
 			const name = arg_state.get('name').toString()
-			arg_state_path.push(name)
+			// arg_state_path.push(name)
 			if ( name == arg_name )
 			{
-				DEBUG_TRACE_FIND_STATE && this.debug('ui.find_component_desc FOUND 1 for ' + arg_name, arg_state_path)
+				DEBUG_TRACE_FIND_STATE && this.debug('ui.find_component_desc FOUND 1 for ' + arg_name, [])
 				return arg_state
 			}
 		}
@@ -480,7 +483,8 @@ export default class UIFactory extends Loggable
 
 		this.leave_group('request_component_desc:async')
 		
-		return this._runtime.register_service('rest_api_resources_query_1')
+		// TODO SET RESOURCES SVC NAME IN SETTINGS OR FIND IT BY ITS TYPE
+		return this._runtime.register_service('resources_svc')
 		.then(
 			(service)=>{
 				// console.log(context + ':request_component_desc:get service for ' + arg_view_name)
@@ -532,6 +536,12 @@ export default class UIFactory extends Loggable
 			
 			(reason)=>{
 				console.error(context + ':request_component_desc:error 3 for ' + arg_component_name, reason)
+			}
+		)
+		.catch(
+			(reason)=>{
+				console.error(context + ':request_component_desc:an error occured [' + reason + ']')
+				return undefined
 			}
 		)
 	}

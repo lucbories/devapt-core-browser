@@ -106,15 +106,37 @@ export default class LayoutSimple extends Layout
 			return Promise.resolve( { switch:false, component:arg_previous_component } )
 		}
 
+		let previous_parent = undefined
 		if (arg_previous_component && arg_previous_component.get_name() != arg_target_component_name )
 		{
 			this.debug('switch:previous component [' + arg_previous_component.get_name() + '] exists and has a different name as target component name=' + arg_target_component_name)
 			arg_previous_component.hide()
+			previous_parent = arg_previous_component.get_dom_parent()
 		}
 
 		if ( ! this._ui.has(arg_target_component_name) )
 		{
 			this.debug('switch:target component doesn t exists for name=' +arg_target_component_name)
+
+			// CREATE ELEMENT
+			// const dom_id = component.get_dom_id()
+			// let element = document.getElementById(dom_id)
+			// if (! element)
+			// {
+			// 	this.debug('create:component dom element is created as a div:' + dom_id)
+			// 	element = document.createElement('div')
+			// 	element.setAttribute('id', dom_id)
+			// 	const content_element = this._runtime.ui()._ui_layout.get_content_element()
+			// 	if (! content_element)
+			// 	{
+			// 		const msg = 'create:no content element'
+			// 		this.error(msg)
+			// 		this.leave_group(msg)
+			// 		return { component:undefined, promise:Promise.reject(context + msg) }
+			// 	}
+			// 	content_element.appendChild(element)
+			// }
+
 
 			const target_component_promise = this._ui.create(arg_target_component_name)
 			.then(
@@ -162,6 +184,11 @@ export default class LayoutSimple extends Layout
 
 		this.debug('switch:target component exists for ' + arg_target_component_name)
 		const component = this._ui.get(arg_target_component_name)
+		if (! component.has_dom_parent(previous_parent) )
+		{
+			this.debug('switch:target component [' + arg_target_component_name + ']:set dom parent')
+			component.set_dom_parent(previous_parent)
+		}
 		component.show()
 		component.update()
 		component.is_menubar     = arg_is_menubar

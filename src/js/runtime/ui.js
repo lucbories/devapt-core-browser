@@ -62,7 +62,7 @@ export default class UI extends Loggable
 	 */
 	constructor(arg_runtime, arg_store)
 	{
-		super(context)
+		super(context, arg_runtime.get_logger_manager())
 
 		this.is_ui = true
 

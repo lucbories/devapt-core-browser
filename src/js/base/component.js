@@ -374,7 +374,7 @@ export default class Component extends Dom
 
 
 	/**
-	 * Get assets promises.
+	 * Add assets dependancy.
 	 * 
 	 * @param {string} arg_asset_id - asset element id.
 	 * 
@@ -614,6 +614,12 @@ export default class Component extends Dom
 	 */
 	get_children_component()
 	{
+		// SKIP FOR MENUBAR
+		if (this.is_menubar)
+		{
+			return []
+		}
+		
 		if ( ! this._children_components)
 		{
 			this._children_components = []
@@ -622,13 +628,16 @@ export default class Component extends Dom
 			const ui = window.devapt().ui()
 			const current_app_state = ui.store.get_state()
 			const state_path = ['views']
+
+			// GET COMPONENT DESCRIPTION AND CHILDREN
 			const component_desc = ui._ui_factory.find_component_desc(current_app_state, this.get_name(), state_path)
 			const children = component_desc ? component_desc.get('children', undefined) : undefined
 			const children_names = children ? Object.keys( children.toJS() ) : []
 			this.debug(':get_children_component:init with children_names:', children_names)
 
+			// GET COMPONENT ITEMS
 			const items = this.get_state_value('items', [])
-			this.debug(':get_children_component:init with items:', items)
+			this.debug(':get_children_component:init with items:', JSON.stringify(items))
 
 			const all_children = _.concat(children_names, items)
 			// console.info(context + ':get_children_component:all_children:%s:', this.get_name(), all_children)
@@ -661,7 +670,7 @@ export default class Component extends Dom
 							return
 						}
 
-						this.warn(':get_children_component:bad item object for:', item.toString())
+						this.warn(':get_children_component:bad item object for:', JSON.stringify(item))
 						return
 					}
 					

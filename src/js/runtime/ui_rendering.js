@@ -42,7 +42,7 @@ export default class UIRendering extends Loggable
 	 */
 	constructor(arg_runtime, arg_ui)
 	{
-		super(context)
+		super(context, arg_runtime.get_logger_manager())
 
 		this.is_ui_rendering = true
 

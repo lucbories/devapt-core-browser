@@ -40,9 +40,19 @@ export default class Rendering
 
 		this._component = arg_component
 
+		assert( T.isNotEmptyString(arg_dom_id), context + ':constructor:bad dom id string')
+
+		// GET OR CREATE DOM ELEMENT
+		let dom_element = document.getElementById(arg_dom_id)
+		if (! dom_element)
+		{
+			dom_element = document.createElement('div')
+			dom_element.setAttribute('id', arg_dom_id)
+		}
+
 		this._dom_id = arg_dom_id
 		this._event_delegator = undefined
-		this.set_dom_element( document.getElementById(arg_dom_id) )
+		this.set_dom_element(dom_element)
 		this._dom_vnode = undefined
 	}
 	
@@ -122,8 +132,16 @@ export default class Rendering
 	{
 		this._component.enter_group('set_dom_element')
 
+		// CHECK GIVEN DOM ELEMENT
+		if (! arg_element)
+		{
+			this._component.error('set_dom_element:no given dom element')
+			
+			this._component.leave_group('set_dom_element:no given dom element')
+			return
+		}
 		assert( (typeof arg_element) == 'object', context + ':set_dom_element:bad element object')
-		
+
 		const new_elm = arg_element
 		const prev_elm = this.get_dom_element()
 		const parent_elm = prev_elm ? prev_elm.parentNode : undefined
@@ -133,11 +151,6 @@ export default class Rendering
 		// console.log(new_elm,  context + ':set_dom_element:new_elm')
 		// console.log(parent_elm,  context + ':set_dom_element:parent_elm')
 
-		if (! arg_element)
-		{
-			this._component.leave_group('set_dom_element:no given dom element')
-			return
-		}
 
 		// REMOVE PREVIOUS NODE FROM ITS PARENT
 		if (prev_elm != new_elm)

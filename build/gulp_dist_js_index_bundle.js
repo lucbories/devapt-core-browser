@@ -3,7 +3,7 @@
 
 var source = require('vinyl-source-stream')
 var buffer = require('vinyl-buffer')
-var gutil = require('gulp-util');
+var gutil = require('gulp-util')
 var browserify = require('browserify')
 
 var DST_PUBLIC_DIR = 'public/js/build'

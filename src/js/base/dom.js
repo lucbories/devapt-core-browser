@@ -72,7 +72,7 @@ export default class Dom extends Stateable
 	{
 		const log_context = arg_log_context ? arg_log_context : context
 		const default_settings = {}
-		super(default_settings, arg_runtime, arg_state, log_context)
+		super(default_settings, arg_runtime, arg_state, log_context, arg_runtime.get_logger_manager())
 		
 		this.is_dom   = true
 
