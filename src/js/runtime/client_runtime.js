@@ -42,6 +42,10 @@ export default class ClientRuntime extends RuntimeBase
 	 * 
 	 * 	API:
 	 * 		->constructor()
+	 * 		
+	 * 		->get_session_uid():string - get unique session id.
+	 * 		->get_session_credentials():Credentials - get session credentials instance.
+	 * 
 	 * 		->load(arg_settings):nothing - Load runtime settings.
 	 * 
 	 * 		->register_service(arg_svc_name, arg_svc_settings):Promise(Service) - Register a remote service.
@@ -145,6 +149,16 @@ export default class ClientRuntime extends RuntimeBase
 	ui()
 	{
 		return this._ui
+	}
+
+
+
+	/**
+	 * Get UI rendering helper.
+	 */
+	ui_rendering()
+	{
+		return this._ui._ui_rendering
 	}
 
 

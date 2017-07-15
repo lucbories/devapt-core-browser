@@ -4738,11 +4738,11 @@ var _assert = require('assert');
 
 var _assert2 = _interopRequireDefault(_assert);
 
-var _types = require('../../../node_modules/devapt-core-common/dist/js/utils/types');
+var _types = require('devapt-core-common/dist/js/utils/types');
 
 var _types2 = _interopRequireDefault(_types);
 
-var _loggable = require('../../../node_modules/devapt-core-common/dist/js/base/loggable');
+var _loggable = require('devapt-core-common/dist/js/base/loggable');
 
 var _loggable2 = _interopRequireDefault(_loggable);
 
@@ -4919,7 +4919,7 @@ var NameTypeSettingsLoggable = function (_Loggable) {
 exports.default = NameTypeSettingsLoggable;
 
 
-},{"../../../node_modules/devapt-core-common/dist/js/base/loggable":158,"../../../node_modules/devapt-core-common/dist/js/utils/types":226,"assert":36}],11:[function(require,module,exports){
+},{"assert":36,"devapt-core-common/dist/js/base/loggable":158,"devapt-core-common/dist/js/utils/types":226}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -12293,10 +12293,17 @@ var UIRendering = function (_Loggable) {
   * 	API:
   * 		->constructor(arg_runtime, arg_ui)
   * 
-  * 		->get_content_element():Element - Get page content element.
-  * 		->clear_content(arg_do_not_hide_components={}) - Hide content components.
+  * 		->process_assets_urls_templates(arg_assets_urls_templates)
+  * 		->process_rendering_result_headers(arg_rendering_result_headers=[], arg_credentials)
   * 
-  * 		->process_content(arg_id, arg_vnode, arg_rendering_result, arg_credentials): - .
+  * 		->get_asset_url(arg_url, arg_type, arg_credentials=undefined)
+  * 
+  * 		->create_dom_url_element(arg_dom_element, arg_tag, arg_id, arg_url, arg_type)
+  * 
+  * 		->process_rendering_result_scripts_urls(arg_dom_element, arg_rendering_result_scripts_urls=[], arg_credentials)
+  * 		->process_rendering_result_scripts_tags(arg_dom_element, arg_rendering_result_scripts_tags=[], arg_credentials)
+  * 		->process_rendering_result_styles_urls(arg_dom_element, arg_rendering_result_styles_urls=[], arg_credentials)
+  * 		->process_rendering_result_styles_tags(arg_dom_element, arg_rendering_result_styles_tags=[], arg_credentials)
   * 
   * @param {object} arg_runtime - client runtime.
   * @param {object} arg_store - UI components state store.
@@ -12326,6 +12333,9 @@ var UIRendering = function (_Loggable) {
 		return _this;
 	}
 
+	// TODO API DOC FOR process_assets_urls_templates(arg_assets_urls_templates)
+
+
 	_createClass(UIRendering, [{
 		key: 'process_assets_urls_templates',
 		value: function process_assets_urls_templates(arg_assets_urls_templates) {
@@ -12338,6 +12348,9 @@ var UIRendering = function (_Loggable) {
 				};
 			}
 		}
+
+		// TODO API DOC FOR process_rendering_result_headers(arg_rendering_result_headers=[]/*, arg_credentials*/)
+
 	}, {
 		key: 'process_rendering_result_headers',
 		value: function process_rendering_result_headers() /*, arg_credentials*/{
@@ -12355,6 +12368,9 @@ var UIRendering = function (_Loggable) {
 			// 	}
 			// )
 		}
+
+		// TODO API DOC FOR get_asset_url(arg_url, arg_type, arg_credentials=undefined)
+
 	}, {
 		key: 'get_asset_url',
 		value: function get_asset_url(arg_url, arg_type) {
@@ -12391,6 +12407,9 @@ var UIRendering = function (_Loggable) {
 			this.debug('get_asset_url:url3', url3);
 			return url3;
 		}
+
+		// TODO API DOC FOR create_dom_url_element(arg_dom_element, arg_tag, arg_id, arg_url, arg_type)
+
 	}, {
 		key: 'create_dom_url_element',
 		value: function create_dom_url_element(arg_dom_element, arg_tag, arg_id, arg_url, arg_type) {
@@ -12422,6 +12441,9 @@ var UIRendering = function (_Loggable) {
 			}
 			arg_dom_element.appendChild(e);
 		}
+
+		// TODO API DOC FOR process_rendering_result_scripts_urls(arg_dom_element, arg_rendering_result_scripts_urls=[], arg_credentials)
+
 	}, {
 		key: 'process_rendering_result_scripts_urls',
 		value: function process_rendering_result_scripts_urls(arg_dom_element) {
@@ -12444,6 +12466,9 @@ var UIRendering = function (_Loggable) {
 				_this2.create_dom_url_element(arg_dom_element, 'script', url.id, url_src, 'text/javascript');
 			});
 		}
+
+		// TODO API DOC FOR process_rendering_result_scripts_tags(arg_dom_element, arg_rendering_result_scripts_tags=[]/*, arg_credentials*/)
+
 	}, {
 		key: 'process_rendering_result_scripts_tags',
 		value: function process_rendering_result_scripts_tags(arg_dom_element) /*, arg_credentials*/{
@@ -12471,6 +12496,9 @@ var UIRendering = function (_Loggable) {
 				arg_dom_element.appendChild(e);
 			});
 		}
+
+		// TODO API DOC FOR process_rendering_result_styles_urls(arg_dom_element, arg_rendering_result_styles_urls=[], arg_credentials)
+
 	}, {
 		key: 'process_rendering_result_styles_urls',
 		value: function process_rendering_result_styles_urls(arg_dom_element) {
@@ -12507,6 +12535,9 @@ var UIRendering = function (_Loggable) {
 				window.devapt().monitor_asset_loading('link', url.id, url_href, e);
 			});
 		}
+
+		// TODO API DOC FOR process_rendering_result_styles_tags(arg_dom_element, arg_rendering_result_styles_tags=[]/*, arg_credentials*/)
+
 	}, {
 		key: 'process_rendering_result_styles_tags',
 		value: function process_rendering_result_styles_tags(arg_dom_element) /*, arg_credentials*/{
@@ -81559,6 +81590,10 @@ var ClientRuntime = function (_RuntimeBase) {
   * 
   * 	API:
   * 		->constructor()
+  * 		
+  * 		->get_session_uid():string - get unique session id.
+  * 		->get_session_credentials():Credentials - get session credentials instance.
+  * 
   * 		->load(arg_settings):nothing - Load runtime settings.
   * 
   * 		->register_service(arg_svc_name, arg_svc_settings):Promise(Service) - Register a remote service.
@@ -81662,6 +81697,16 @@ var ClientRuntime = function (_RuntimeBase) {
 		key: 'ui',
 		value: function ui() {
 			return this._ui;
+		}
+
+		/**
+   * Get UI rendering helper.
+   */
+
+	}, {
+		key: 'ui_rendering',
+		value: function ui_rendering() {
+			return this._ui._ui_rendering;
 		}
 
 		/**

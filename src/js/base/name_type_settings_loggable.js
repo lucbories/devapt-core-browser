@@ -2,8 +2,8 @@
 import assert from 'assert'
 
 // COMMON IMPORTS
-import T        from '../../../node_modules/devapt-core-common/dist/js/utils/types'
-import Loggable from '../../../node_modules/devapt-core-common/dist/js/base/loggable'
+import T        from 'devapt-core-common/dist/js/utils/types'
+import Loggable from 'devapt-core-common/dist/js/base/loggable'
 
 // BROWSER IMPORTS
 

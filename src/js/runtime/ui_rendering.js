@@ -30,10 +30,17 @@ export default class UIRendering extends Loggable
 	 * 	API:
 	 * 		->constructor(arg_runtime, arg_ui)
 	 * 
-	 * 		->get_content_element():Element - Get page content element.
-	 * 		->clear_content(arg_do_not_hide_components={}) - Hide content components.
+	 * 		->process_assets_urls_templates(arg_assets_urls_templates)
+	 * 		->process_rendering_result_headers(arg_rendering_result_headers=[], arg_credentials)
 	 * 
-	 * 		->process_content(arg_id, arg_vnode, arg_rendering_result, arg_credentials): - .
+	 * 		->get_asset_url(arg_url, arg_type, arg_credentials=undefined)
+	 * 
+	 * 		->create_dom_url_element(arg_dom_element, arg_tag, arg_id, arg_url, arg_type)
+	 * 
+	 * 		->process_rendering_result_scripts_urls(arg_dom_element, arg_rendering_result_scripts_urls=[], arg_credentials)
+	 * 		->process_rendering_result_scripts_tags(arg_dom_element, arg_rendering_result_scripts_tags=[], arg_credentials)
+	 * 		->process_rendering_result_styles_urls(arg_dom_element, arg_rendering_result_styles_urls=[], arg_credentials)
+	 * 		->process_rendering_result_styles_tags(arg_dom_element, arg_rendering_result_styles_tags=[], arg_credentials)
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_store - UI components state store.
@@ -61,7 +68,7 @@ export default class UIRendering extends Loggable
 		// this.update_trace_enabled()
 	}
 	
-
+	// TODO API DOC FOR process_assets_urls_templates(arg_assets_urls_templates)
 	process_assets_urls_templates(arg_assets_urls_templates)
 	{
 		if (arg_assets_urls_templates)
@@ -75,7 +82,7 @@ export default class UIRendering extends Loggable
 		}
 	}
 
-
+	// TODO API DOC FOR process_rendering_result_headers(arg_rendering_result_headers=[]/*, arg_credentials*/)
 	process_rendering_result_headers(arg_rendering_result_headers=[]/*, arg_credentials*/)
 	{
 		this.debug('process_rendering_result_headers:rendering headers', arg_rendering_result_headers)
@@ -91,7 +98,7 @@ export default class UIRendering extends Loggable
 		// )
 	}
 
-
+	// TODO API DOC FOR get_asset_url(arg_url, arg_type, arg_credentials=undefined)
 	get_asset_url(arg_url, arg_type, arg_credentials=undefined)
 	{
 		const template = this._assets_urls_templates[arg_type]
@@ -130,7 +137,7 @@ export default class UIRendering extends Loggable
 		return url3
 	}
 
-
+	// TODO API DOC FOR create_dom_url_element(arg_dom_element, arg_tag, arg_id, arg_url, arg_type)
 	create_dom_url_element(arg_dom_element, arg_tag, arg_id, arg_url, arg_type)
 	{
 		// SEARCH DEVAPT BOOTSTRAP SCRIPT TAG
@@ -165,7 +172,7 @@ export default class UIRendering extends Loggable
 		arg_dom_element.appendChild(e)
 	}
 
-
+	// TODO API DOC FOR process_rendering_result_scripts_urls(arg_dom_element, arg_rendering_result_scripts_urls=[], arg_credentials)
 	process_rendering_result_scripts_urls(arg_dom_element, arg_rendering_result_scripts_urls=[], arg_credentials)
 	{
 		this.debug('process_rendering_result_scripts_urls:rendering body_scripts_urls', arg_rendering_result_scripts_urls)
@@ -185,7 +192,7 @@ export default class UIRendering extends Loggable
 		)
 	}
 
-
+	// TODO API DOC FOR process_rendering_result_scripts_tags(arg_dom_element, arg_rendering_result_scripts_tags=[]/*, arg_credentials*/)
 	process_rendering_result_scripts_tags(arg_dom_element, arg_rendering_result_scripts_tags=[]/*, arg_credentials*/)
 	{
 		this.debug('process_rendering_result_scripts_tags:rendering body_scripts_tags', arg_rendering_result_scripts_tags)
@@ -213,7 +220,7 @@ export default class UIRendering extends Loggable
 		)
 	}
 
-
+	// TODO API DOC FOR process_rendering_result_styles_urls(arg_dom_element, arg_rendering_result_styles_urls=[], arg_credentials)
 	process_rendering_result_styles_urls(arg_dom_element, arg_rendering_result_styles_urls=[], arg_credentials)
 	{
 		this.debug('process_rendering_result_styles_urls:rendering body_styles_urls', arg_rendering_result_styles_urls)
@@ -249,7 +256,7 @@ export default class UIRendering extends Loggable
 		)
 	}
 
-
+	// TODO API DOC FOR process_rendering_result_styles_tags(arg_dom_element, arg_rendering_result_styles_tags=[]/*, arg_credentials*/)
 	process_rendering_result_styles_tags(arg_dom_element, arg_rendering_result_styles_tags=[]/*, arg_credentials*/)
 	{
 		this.debug('process_rendering_result_styles_tags:rendering body_styles_tags', arg_rendering_result_styles_tags)
