@@ -3,12 +3,12 @@ import assert from 'assert'
 import { format } from 'util'
 
 // COMMON IMPORTS
-import T             from '../../../node_modules/devapt-core-common/dist/js/utils/types'
-import uid           from '../../../node_modules/devapt-core-common/dist/js/utils/uid.js'
-import { transform } from '../../../node_modules/devapt-core-common/dist/js/utils/transform'
+import T             from 'devapt-core-common/dist/js/utils/types'
+import uid           from 'devapt-core-common/dist/js/utils/uid.js'
+import { transform } from 'devapt-core-common/dist/js/utils/transform'
 
 
-const context = 'browser/base/binding_stream'
+const context = 'browser/base/binding/binding_stream'
 
 
 

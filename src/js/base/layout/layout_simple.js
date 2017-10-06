@@ -6,13 +6,13 @@ const vdom_from_json = vdom_as_json.fromJson
 import VNode from 'virtual-dom/vnode/vnode'
 
 // COMMON IMPORTS
-import T from '../../../node_modules/devapt-core-common/dist/js/utils/types'
+import T from 'devapt-core-common/dist/js/utils/types'
 
 // BROWSER IMPORTS
 import Layout from './layout'
 
 
-const context = 'browser/base/layout_simple'
+const context = 'browser/base/layout/layout_simple'
 
 
 
@@ -652,8 +652,11 @@ export default class LayoutSimple extends Layout
 		this.debug('render_page_content_vnode:content_state_items', content_state_items)
 
 		// GET VNODE CHILDREN NAMES
+		const get_vnode_id_fn = (vnode)=>{
+			return vnode && vnode.properties && vnode.properties.id ? vnode.properties.id : undefined
+		}
 		const vnode_children = arg_vnode.children
-		const vnode_children_names = vnode_children.map( (vnode)=>vnode.properties.id ).filter( (v)=>! T.isUndefined(v) )
+		const vnode_children_names = vnode_children.map(get_vnode_id_fn).filter( (v)=>! T.isUndefined(v) )
 		this.debug('process_content_vnode:vnode_children_names', vnode_children_names)
 
 		// GET ORDERED CHILDREN LIST

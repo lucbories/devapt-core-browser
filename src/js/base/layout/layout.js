@@ -4,10 +4,10 @@
 // COMMON IMPORTS
 
 // BROWSER IMPORTS
-import NameTypeSettingsLoggable from './name_type_settings_loggable'
+import NameTypeSettingsLoggable from '../name_type_settings_loggable'
 
 
-const context = 'browser/base/layout'
+const context = 'browser/base/layout/layout'
 
 
 

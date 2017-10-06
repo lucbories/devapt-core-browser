@@ -4,8 +4,8 @@ import { format } from 'util'
 import _ from 'lodash'
 
 // COMMON IMPORTS
-import T      from '../../../node_modules/devapt-core-common/dist/js/utils/types'
-import Stream from '../../../node_modules/devapt-core-common/dist/js/messaging/stream'
+import T      from 'devapt-core-common/dist/js/utils/types'
+import Stream from 'devapt-core-common/dist/js/messaging/stream'
 
 // BROWSER IMPORTS
 import BindingStream          from './binding_stream'
@@ -13,7 +13,7 @@ import BindingServiceTimeline from './binding_service_timeline'
 import BindingService         from './binding_service'
 
 
-const context = 'browser/base/binding_Loader'
+const context = 'browser/base/binding/binding_Loader'
 
 
 

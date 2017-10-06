@@ -3,15 +3,15 @@
 // import _ from 'lodash'
 
 // COMMON IMPORTS
-import T         from '../../../node_modules/devapt-core-common/dist/js/utils/types'
-import uid       from '../../../node_modules/devapt-core-common/dist/js/utils/uid.js'
-import Stateable from '../../../node_modules/devapt-core-common/dist/js/base/stateable'
+import T         from 'devapt-core-common/dist/js/utils/types'
+import uid       from 'devapt-core-common/dist/js/utils/uid.js'
+import Stateable from 'devapt-core-common/dist/js/base/stateable'
 
 // BROWSER IMPORTS
 import Rendering from './rendering'
 
 
-const context = 'browser/base/dom'
+const context = 'browser/base/component/dom'
 
 
 

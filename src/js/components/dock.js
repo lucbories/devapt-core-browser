@@ -1,12 +1,14 @@
 // NPM IMPORTS
 import _ from 'lodash'
 import assert from 'assert'
+import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
 import T from '../../../node_modules/devapt-core-common/dist/js/utils/types'
 
 // BROWSER IMPORTS
 import Container from '../base/container'
+import DockItem  from './dock_item'
 
 
 const context = 'browser/components/dock'
@@ -30,6 +32,8 @@ export default class Dock extends Container
 		super(arg_runtime, arg_state, arg_log_context ? arg_log_context : context)
 
 		this.is_dock_component = true
+
+		this._dock_item_components = []
 	}
 	
 	
@@ -76,7 +80,23 @@ export default class Dock extends Container
 
 		return undefined
 	}
-	
+
+
+
+	/**
+	 * Get view children components.
+	 * 
+	 * @returns {array} - list of Component.
+	 */
+	get_children_component()
+	{
+		if ( ! this._children_components)
+		{
+			this._dock_item_components = []
+		}
+		return this._dock_item_components
+	}
+
 	
 	
 	/**
@@ -98,6 +118,7 @@ export default class Dock extends Container
 			arg_items_array.splice(arg_items_count)
 		}
 		
+		const runtime = this.get_runtime()
 		_.forEach(arg_items_array,
 			(item, index)=>{
 				const component = this.get_component(item)
@@ -108,7 +129,16 @@ export default class Dock extends Container
 					return
 				}
 
-				component.set_dom_parent(dom_elem)
+				const name = component.get_name() + '_dock_item'
+				const state = {
+					"name":name,
+					"state":{
+						"items":[component]
+					}
+				}
+				const dock_item = new DockItem(runtime, fromJS(state), context + ':add item:item name=' + name)
+				dock_item.set_dom_parent(dom_elem)
+				this._dock_item_components.push(dock_item)
 			}
 		)
 	}

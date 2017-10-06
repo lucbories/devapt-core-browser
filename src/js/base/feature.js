@@ -25,6 +25,8 @@ const context = 'browser/base/feature'
  * 		->get_settings():object - get instance type (INHERITED).
  * 		->is_valid():boolean - check if instance is valid (settings...) (INHERITED, SUBCLASSED).
  * 
+ * 		->get_author():string|object - get author id or record.
+ * 		->get_license():string - get license name.
  * 		->get_about():string|object - get about doc content.
  * 		->get_help():string|object - get about doc content.
  * 		->get_refdoc():string|object - get about doc content.
@@ -36,7 +38,7 @@ export default class Feature extends NameTypeSettingsLoggable
 	 * Creates an instance of Feature, do not use directly but in a sub class.
 	 * 
 	 * A Feature configuration is a simple object with this common attributes:
-	 * 		- name:string  - command unique name.
+	 * 		- name:string  - unique name.
 	 * 		- type:string  - type of commnand from command factory known types list (example: display).
 	 * 		- about:string - string or doc object: { 'topicA':{ 'topicA1':'...' }, 'topicB':'...' }.
 	 * 		- help:string  - string or doc object: { 'topicA':{ 'topicA1':'...' }, 'topicB':'...' }.
@@ -59,13 +61,37 @@ export default class Feature extends NameTypeSettingsLoggable
 
 
 	/**
+	 * Get Author.
+	 * 
+	 * @returns {string|object} - author id string or author record object
+	 */
+	get_author()
+	{
+		return ( T.isObject(this._settings) && ( T.isString(this._settings.author) || T.isObject(this._settings.author) ) ) ? this._settings.author : undefined
+	}
+
+
+
+	/**
+	 * Get License name.
+	 * 
+	 * @returns {string}
+	 */
+	get_license()
+	{
+		return ( T.isObject(this._settings) && T.isString(this._settings.license) ) ? this._settings.license : undefined
+	}
+
+
+
+	/**
 	 * Get About content.
 	 * 
 	 * @returns {string|object}
 	 */
 	get_about()
 	{
-		return ( T.isObject(this._settings) && T.isString(this._settings.about) ) ? this._settings.about : undefined
+		return ( T.isObject(this._settings) && ( T.isString(this._settings.about) || T.isObject(this._settings.about) ) ) ? this._settings.about : undefined
 	}
 
 
@@ -77,7 +103,7 @@ export default class Feature extends NameTypeSettingsLoggable
 	 */
 	get_help()
 	{
-		return ( T.isObject(this._settings) && T.isString(this._settings.help) ) ? this._settings.help : undefined
+		return ( T.isObject(this._settings) && ( T.isString(this._settings.help) || T.isObject(this._settings.help) ) ) ? this._settings.help : undefined
 	}
 
 

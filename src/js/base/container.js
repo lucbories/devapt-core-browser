@@ -951,4 +951,42 @@ export default class Container extends Component
 			}
 		)
 	}
+
+
+
+	/**
+	 * Show component.
+	 * 
+	 * @returns {nothing}
+	 */
+	show()
+	{
+		super.show()
+
+		const children = this.get_children_component()
+		_.forEach(children,
+			(child)=>{
+				child.show()
+			}
+		)
+	}
+
+
+
+	/**
+	 * Hide component.
+	 * 
+	 * @returns {nothing}
+	 */
+	hide()
+	{
+		super.hide()
+
+		const children = this.get_children_component()
+		_.forEach(children,
+			(child)=>{
+				child.hide()
+			}
+		)
+	}
 }

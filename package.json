@@ -1,7 +1,7 @@
 {
   "name": "devapt-core-browser",
-  "version": "2.0.0",
-  "description": "Developpers Application Toolkit - build application (backend, frontend, RESTfull, API, distributed nodes, reactive...) from configuration",
+  "version": "2.0.1",
+  "description": "Developpers Application Toolkit - browser features: client runtime, ui rendering and management, client routing and logging",
   "author": {
     "name": "Luc BORIES",
     "email": "luc.bories@gmail.com",
@@ -64,7 +64,6 @@
     "immutable": ">=3.7.5",
     "jade": ">=1.11.0",
     "lodash": ">=4.16.4",
-    "lowdb": ">=0.12.5",
     "moment": ">=2.13.0",
     "mustache": ">=2.2.1",
     "object-sizeof": ">=1.0.10",

@@ -6,14 +6,14 @@ import patch from 'virtual-dom/patch'
 import create_element from 'virtual-dom/create-element'
 
 // COMMON IMPORTS
-import T                        from '../../../node_modules/devapt-core-common/dist/js/utils/types'
-import rendering_factory        from '../../../node_modules/devapt-core-common/dist/js/rendering/rendering_factory'
-import RenderingResolverBuilder from '../../../node_modules/devapt-core-common/dist/js/rendering/rendering_resolver'
+import T                        from 'devapt-core-common/dist/js/utils/types'
+import rendering_factory        from 'devapt-core-common/dist/js/rendering/rendering_factory'
+import RenderingResolverBuilder from 'devapt-core-common/dist/js/rendering/rendering_resolver'
 
 // BROWSER IMPORTS
 
 
-const context = 'browser/base/rendering'
+const context = 'browser/base/component/rendering'
 
 
 

@@ -14,6 +14,7 @@ import Table           from '../components/table'
 import LogsTable       from '../components/logs_table'
 import AttributesTable from '../components/attributes_table'
 import Dock            from '../components/dock'
+import DockItem        from '../components/dock_item'
 import Tabs            from '../components/tabs'
 import Tree            from '../components/tree'
 import TableTree       from '../components/table_tree'
@@ -337,23 +338,26 @@ export default class UIFactory extends Loggable
 	{
 		switch(arg_type.toLocaleLowerCase())
 		{
-			case 'component':	return Component
+			case 'component':		return Component
 
-			case 'container':	return Container
-			case 'dock':		return Dock
+			case 'container':		return Container
+			case 'dock':			return Dock
+			case 'dockitem':
+			case 'dock_item':
+			case 'dock-item':		return DockItem
 
 			case 'input-field':
-			case 'inputfield':	return InputField
+			case 'inputfield':		return InputField
 			
 			case 'logstable':       return LogsTable
 			case 'attributestable': return AttributesTable
 			case 'table':           return Table
 			case 'tabs':            return Tabs
 			
-			case 'tabletree':    return TableTree
-			case 'topology':     return Topology
-			case 'recordstable': return RecordsTable
-			case 'tree':         return Tree
+			case 'tabletree':    	return TableTree
+			case 'topology':     	return Topology
+			case 'recordstable':	 return RecordsTable
+			case 'tree':         	return Tree
 
 			case 'button':
 			case 'script':

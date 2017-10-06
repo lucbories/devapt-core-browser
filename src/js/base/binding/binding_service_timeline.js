@@ -3,15 +3,15 @@ import assert from 'assert'
 import { format } from 'util'
 
 // COMMON IMPORTS
-import T             from '../../../node_modules/devapt-core-common/dist/js/utils/types'
-import { transform } from '../../../node_modules/devapt-core-common/dist/js/utils/transform'
-import Stream        from '../../../node_modules/devapt-core-common/dist/js/messaging/stream'
+import T             from 'devapt-core-common/dist/js/utils/types'
+import { transform } from 'devapt-core-common/dist/js/utils/transform'
+import Stream        from 'devapt-core-common/dist/js/messaging/stream'
 
 // BROWSER IMPORTS
 import BindingStream from './binding_stream'
 
 
-const context = 'browser/base/binding_service_timeline'
+const context = 'browser/base/binding/binding_service_timeline'
 
 
 
