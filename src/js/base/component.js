@@ -193,11 +193,14 @@ export default class Component extends StatedDom
 		{
 			size.width  = dom_elem.offsetWidth,
 			size.height = dom_elem.offsetHeight
-			console.log(context + ':update_size:name=%s:from get_size:width=%s height:%s', this.get_name(), size.width, size.height)
+			console.log(context + ':update_size:name=%s:from dom elem:width=%s height:%s', this.get_name(), size.width, size.height)
 		}
-		
-		dom_elem.style.width  = '' + size.width  + 'px;'
-		dom_elem.style.height = '' + size.height + 'px;'
+
+		if (size.width != 0 && size.height != 0)
+		{
+			dom_elem.style.width  = '' + size.width  + 'px;'
+			dom_elem.style.height = '' + size.height + 'px;'
+		}
 
 		return size
 	}

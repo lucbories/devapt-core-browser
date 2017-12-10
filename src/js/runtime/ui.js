@@ -15,7 +15,7 @@ import Stream                 from '../../../node_modules/devapt-core-common/dis
 import UIFactory      from './ui_factory'
 import UIRendering    from './ui_rendering'
 import Page           from '../components/page'
-import LayoutSimple   from '../base/layout_simple'
+import LayoutSimple   from '../base/layout/layout_simple'
 import DisplayCommand from '../commands/display_command'
 
 
