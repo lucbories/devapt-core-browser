@@ -1,6 +1,6 @@
 {
   "name": "devapt-core-browser",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Developpers Application Toolkit - browser features: client runtime, ui rendering and management, client routing and logging",
   "author": {
     "name": "Luc BORIES",
@@ -26,15 +26,21 @@
   },
   "scripts": {
     "build": "gulp",
-    "test": "mocha --recursive --reporter spec --compilers js:babel-register src/test",
-    "postversion": "unix2dos package.json",
-    "commit": "unix2dos package.json && git status && pause && git commit -am ",
-    "patch": "npm version patch && unix2dos package.json && git status && pause && git commit -am ",
-    "minor": "npm version minor && unix2dos package.json && git status && pause && git commit -am ",
-    "major": "npm version major && unix2dos package.json && git status && pause && git commit -am ",
-    "push-dev": "git push devapt develop",
-    "merge": "git checkout master && git merge develop && git push devapt master && git checkout develop",
-    "release": "git push devapt develop && git checkout master && git merge develop && git push devapt master && git checkout develop"
+    "assets": "",
+    "resources": "",
+    "bundle": "unix2dos package.json",
+    "test": "",
+    "test:todo": "mocha --recursive --reporter spec --compilers js:babel-register src/test",
+    "test:empty": "mocha --reporter spec --compilers js:babel-register",
+    "test:watch": "npm run test -- --watch",
+    "release-develop": "npm run build && npm run test && git commit -am $npm_package_version && git push browser develop",
+    "release-master": "npm run merge && git tag $npm_package_version && git push --tags browser master && npm publish && git checkout develop",
+    "patch": "npm version patch && unix2dos package.json",
+    "minor": "npm version minor && unix2dos package.json",
+    "major": "npm version major && unix2dos package.json",
+    "merge": "git checkout master && git merge develop && git push browser master",
+    "save-develop": "git commit -am && git push browser develop",
+    "save-master": "npm run merge && git checkout develop"
   },
   "browser": [
     "sequelize",
@@ -42,15 +48,19 @@
   ],
   "keywords": [
     "server",
+    "browser",
+    "backend",
+    "frontend",
     "api",
     "rest",
     "devapt",
     "toolkit",
-    "redux",
+    "stateful",
+    "responsive",
     "reactive",
     "declarative",
     "distributed",
-    "responsive"
+    "redux"
   ],
   "dependencies": {
     "crossroads": ">=0.12.2",

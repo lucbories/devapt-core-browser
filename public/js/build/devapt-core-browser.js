@@ -56676,7 +56676,7 @@ var DefaultDefaultRendering = function (_RenderingPlugin) {
 exports.default = DefaultDefaultRendering;
 
 
-}).call(this,"/node_modules\\devapt-core-common\\dist\\js\\default_plugins")
+}).call(this,"/..\\..\\..\\..\\..\\Documents\\PERSONNEL\\MYPROJECTS\\GitHub\\devapt-core-browser\\node_modules\\devapt-core-common\\dist\\js\\default_plugins")
 },{"../plugins/rendering_plugin":179,"../rendering/index":188,"../utils/types":233,"assert":40,"path":99}],170:[function(require,module,exports){
 'use strict';
 
@@ -60966,6 +60966,7 @@ var RenderingBuilder = function (_RenderingBuilderAsse) {
 			initial_state.app_url = this._application ? this._application.app_url : null;
 			initial_state.app_assets = this._application ? this._application.app_assets : null;
 			initial_state.commands = this._application ? this._application.get_resources_settings('commands') : {};
+			initial_state.features = this._application ? this._application.get_resources_settings('features') : {};
 			initial_state.views = this._application ? this._application.get_resources_settings('views') : {};
 			initial_state.menubars = this._application ? this._application.get_resources_settings('menubars') : {};
 			initial_state.menus = this._application ? this._application.get_resources_settings('menus') : {};
@@ -63974,6 +63975,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir,
 		arg_state.config.resources.by_type = {};
 		arg_state.config.resources.by_type.commands = {}; // Resource names (map name:name)
 		arg_state.config.resources.by_type.services = {}; // Resource names (map name:name)
+		arg_state.config.resources.by_type.features = {}; // Resource names (map name:name)
 		arg_state.config.resources.by_type.views = {}; // Resource names (map name:name)
 		arg_state.config.resources.by_type.models = {}; // Resource names (map name:name)
 		arg_state.config.resources.by_type.menubars = {}; // Resource names (map name:name)
@@ -64375,6 +64377,7 @@ var error_msg_bad_templates = context + ':package.templates should be an array';
 var error_msg_bad_includes = context + ':package.includes should be an array';
 
 var error_msg_bad_service = context + ':package.services.* should be an object';
+var error_msg_bad_feature = context + ':package.features.* should be an object';
 var error_msg_bad_command = context + ':package.commands.*. should be an object';
 var error_msg_bad_resource = context + ':package.resources.* should be a string';
 var error_msg_bad_template = context + ':package.templates.* should be a string';
@@ -64479,6 +64482,7 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 	arg_package_config.base_dir = arg_package_config.base_dir ? arg_package_config.base_dir : '';
 	arg_package_config.commands = arg_package_config.commands ? arg_package_config.commands : {};
 	arg_package_config.services = arg_package_config.services ? arg_package_config.services : {};
+	arg_package_config.features = arg_package_config.features ? arg_package_config.features : {};
 	arg_package_config.resources = arg_package_config.resources ? arg_package_config.resources : {};
 	arg_package_config.templates = arg_package_config.templates ? arg_package_config.templates : {};
 	arg_package_config.includes = arg_package_config.includes ? arg_package_config.includes : {};
@@ -64501,15 +64505,53 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 
 		var _absolute_path_name = _path2.default.join(arg_base_dir, arg_package_config.base_dir, arg_package_config.services);
 		arg_package_config.services = _parser2.default.read(_absolute_path_name, 'utf8').services;
-
-		// const file_path_name = path.join(arg_base_dir, arg_package_config.services)
-		// arg_package_config.services = require(file_path_name).services
 	}
 	if (_types2.default.isObject(arg_package_config.services)) {
 		logs.info(context, 'loading world...packages.' + arg_package_name + '.services is now an object');
 		// load_services(arg_package_config.services)
 	}
 	// console.log( Object.keys(arg_package_config.services), 'arg_package_config.services for ' + arg_package_name)
+
+
+	// LOAD FEATURES FROM A STRING
+	if (_types2.default.isString(arg_package_config.features)) {
+		logs.info(context, 'loading world...features.' + arg_package_name + '.features is a string');
+
+		var _absolute_path_name2 = _path2.default.join(arg_base_dir, arg_package_config.base_dir, arg_package_config.features);
+		arg_package_config.features = _parser2.default.read(_absolute_path_name2, 'utf8').features;
+	}
+
+	// LOAD FEATURES FROM AN ARRAY
+	if (_types2.default.isNotEmptyArray(arg_package_config.features)) {
+		logs.info(context, 'loading world...features.' + arg_package_name + '.features is an array');
+
+		var features = arg_package_config.features;
+		arg_package_config.features = {};
+		_lodash2.default.forEach(features, function (feature_cfg, feature_key) {
+			// LOAD FEATURES FROM A STRING
+			if (_types2.default.isString(feature_cfg)) {
+				logs.info(context, 'loading world...features.' + arg_package_name + '.features array item string at [' + feature_key + ']');
+
+				var _absolute_path_name3 = _path2.default.join(arg_base_dir, arg_package_config.base_dir, feature_cfg);
+				var loaded_features = _parser2.default.read(_absolute_path_name3, 'utf8').features;
+				if (_types2.default.isObject(loaded_features)) {
+					arg_package_config.features = _lodash2.default.merge(arg_package_config.features, loaded_features);
+					return;
+				}
+			}
+
+			// LOAD FEATURES FROM AN OBJECT
+			if (_types2.default.isObject(feature_cfg)) {
+				arg_package_config.features = _lodash2.default.merge(arg_package_config.features, feature_cfg);
+			}
+		});
+	}
+
+	// LOAD FEATURES FROM AN OBJECT
+	if (_types2.default.isObject(arg_package_config.features)) {
+		logs.info(context, 'loading world...packages.' + arg_package_name + '.features is now an object');
+		// features(arg_package_config.features)
+	}
 
 	// CHECK ATTRIBUTES
 	(0, _assert2.default)(_types2.default.isString(arg_package_config.base_dir), error_msg_bad_base_dir + ' for package ' + arg_package_name);
@@ -64539,6 +64581,7 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 	arg_package_config.resources_by_type.menus = {};
 	arg_package_config.resources_by_type.datasources = {};
 	arg_package_config.resources_by_type.services = {};
+	arg_package_config.resources_by_type.features = {};
 	arg_package_config.resources_by_type.commands = {};
 	arg_package_config.views = {};
 	arg_package_config.models = {};
@@ -64558,6 +64601,21 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 
 		arg_package_config.resources_by_name[svc_name] = svc;
 		arg_package_config.resources_by_type['services'][svc_name] = svc;
+	});
+
+	// REGISTER FEATURES AS RESOURCES
+	Object.keys(arg_package_config.features).forEach(function (feature_name) {
+		var feature = arg_package_config.features[feature_name];
+		(0, _assert2.default)(_types2.default.isObject(feature), error_msg_bad_feature);
+		logs.info(context, 'loading world...packages.' + arg_package_name + '.features.' + feature_name + ' is registered');
+
+		// REGISTER BASE DIRECTORIES
+		feature.app_base_dir = arg_base_dir;
+		feature.pkg_base_dir = arg_package_config.base_dir;
+		feature.name = feature_name;
+
+		arg_package_config.resources_by_name[feature_name] = feature;
+		arg_package_config.resources_by_type['features'][feature_name] = feature;
 	});
 
 	// REGISTER COMMANDS AS RESOURCES
@@ -65271,7 +65329,7 @@ var RegistryStore = function (_MapStore) {
 
 		var _this = _possibleConstructorReturn(this, (RegistryStore.__proto__ || Object.getPrototypeOf(RegistryStore)).call(this, arg_initial_state, my_context, arg_logger_manager));
 
-		_this.collections = ['nodes', 'servers', 'applications', 'modules', 'plugins', 'resources', 'security', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions', 'datasources'];
+		_this.collections = ['nodes', 'servers', 'applications', 'modules', 'plugins', 'resources', 'security', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'features', 'transactions', 'datasources'];
 
 		_this.register_collection('nodes', 'node');
 		_this.register_collection('servers', 'server');
@@ -65287,6 +65345,7 @@ var RegistryStore = function (_MapStore) {
 		_this.register_resources_collection('menus', 'menu');
 		_this.register_resources_collection('loggers', 'logger');
 		_this.register_resources_collection('services', 'service');
+		_this.register_resources_collection('features', 'feature');
 		_this.register_resources_collection('transactions', 'transaction');
 		_this.register_resources_collection('datasources', 'datasource');
 		return _this;
