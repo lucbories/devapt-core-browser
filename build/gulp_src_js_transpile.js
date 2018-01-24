@@ -7,7 +7,10 @@ var DST_DIR  = 'dist/js'
 
 
 const BABEL_CONFIG = {
-	presets: ['es2015']
+	presets: [
+		["@babel/preset-env", { "modules": false, "useBuiltIns":"usage", "debug":false } ],
+		["@babel/preset-es2015"]
+	  ]
 }
 
 
